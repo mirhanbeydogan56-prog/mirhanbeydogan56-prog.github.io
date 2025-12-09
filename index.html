@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gizli Sohbet</title>
+
+  <style>
+    body { font-family: Arial; background:#111; color:#eee; margin:0; padding:0; display:flex; justify-content:center; align-items:center; height:100vh; }
+    #lock, #chatApp { width:100%; max-width:420px; background:#1c1c1c; padding:20px; border-radius:12px; }
+    input, button { width:100%; padding:12px; margin-top:10px; border-radius:8px; border:none; }
+    button { background:#4caf50; color:white; cursor:pointer; }
+    #chatApp { display:none; height:90vh; flex-direction:column; }
+    #messages { flex:1; overflow-y:auto; padding:10px; background:#0003; border-radius:8px; }
+    .msg { margin:8px 0; padding:8px 12px; background:#333; border-radius:8px; }
+    #inputArea { display:flex; gap:8px; align-items:center; }
+    #inputArea input { flex:1; padding:16px; font-size:16px; }
+  </style>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
+</head>
+<body>
+
+<!-- GİRİŞ -->
+<div id="lock">
+  <h2>Gizli Sohbet</h2>
+  <p>Sohbete erişmek için şifre girin.</p>
+  <input id="pass" type="password" placeholder="Şifre"> 
+  <button onclick="unlock()">Giriş Yap</button>
+  <p id="error" style="color:#f55; display:none;">Hatalı şifre!</p>
+</div>
+
+<!-- CHAT -->
+<div id="chatApp">
+  <h2>Gizli Sohbet</h2>
+  <div id="messages"></div>
+
+  <div id="inputArea">
+    <input id="msgInput" placeholder="Mesaj yaz..." />
+    <button onclick="sendMsg()" style="width:90px;">Gönder</button>
+  </div>
+</div>
+
+<script>
+// Şifreler
+const VALID_PASSWORDS = ["esma5685", "mirhan5685"];
+let currentUser = null;
+
+// Firebase Bağlantı
+const firebaseConfig = {
+  apiKey: "AIzaSyDaFbrAf3PzJgJb6iYc9fcmEFdLSuGxrLo",
+  authDomain: "esma-mirhan.firebaseapp.com",
+  databaseURL: "https://esma-mirhan-default-rtdb.firebaseio.com",
+  projectId: "esma-mirhan",
+  storageBucket: "esma-mirhan.firebasestorage.app",
+  messagingSenderId: "501072873882",
+  appId: "1:501072873882:web:de97303277be9d134d9223"
+};
+
+// Firebase başlat
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// Giriş fonksiyonu
+function unlock() {
+  const p = document.getElementById("pass").value.trim();
+
+  if (!VALID_PASSWORDS.includes(p)) {
+    document.getElementById("error").style.display = "block";
+    return;
+  }
+
+  currentUser = p === "esma5685" ? "Esma" : "Mirhan";
+
+  document.getElementById("lock").style.display = "none";
+  document.getElementById("chatApp").style.display = "flex";
+
+  listenMessages();
+}
+
+// Firebase mesaj dinleyici (ANINDA ÇALIŞIR)
+function listenMessages() {
+  const messagesRef = db.ref("messages");
+
+  messagesRef.on("value", snapshot => {
+    const data = snapshot.val();
+    renderMessages(data);
+  });
+}
+
+// Mesajları ekrana basma
+function renderMessages(data) {
+  const messagesEl = document.getElementById("messages");
+  messagesEl.innerHTML = "";
+
+  for (let id in data) {
+    const m = data[id];
+
+    const div = document.createElement("div");
+    div.className = "msg";
+    div.innerHTML = `<b>${m.sender}</b>: ${m.text}<br><small>${m.time}</small>`;
+    messagesEl.appendChild(div);
+  }
+
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+// Mesaj gönder
+function sendMsg() {
+  const val = document.getElementById("msgInput").value.trim();
+  if (!val || !currentUser) return;
+
+  const now = new Date();
+  const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  db.ref("messages").push({
+    sender: currentUser,
+    text: val,
+    time: time
+  });
+
+  document.getElementById("msgInput").value = "";
+}
+</script>
+
+</body>
+</html>
