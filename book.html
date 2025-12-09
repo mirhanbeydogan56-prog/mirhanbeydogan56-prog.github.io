@@ -3,351 +3,179 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Esma için — Kitap</title>
+  <title>Kitap — Bizim Hikayemiz</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
   <style>
-    :root{
-      --bg1:#FFF1F3;
-      --bg2:#FDEDEC;
-      --accent:#E85D75;
-      --muted:#6b7280;
-      --card: rgba(255,255,255,0.92);
-    }
-    *{box-sizing:border-box;}
     body{
-      margin:0;min-height:100vh;font-family:Inter,system-ui,Arial;
-      background: radial-gradient(circle at 10% 20%, var(--bg1), transparent 25%),
-                  linear-gradient(120deg,var(--bg1), var(--bg2));
-      padding:24px;
-      color:#111;
-      display:flex;align-items:center;justify-content:center;
+      margin:0;
+      background:#FFF1F3;
+      font-family:Inter, sans-serif;
+      padding:20px;
+      color:#333;
     }
-    .card{
-      width:100%;max-width:900px;background:var(--card);backdrop-filter: blur(4px);
-      border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,0.06);
-      padding:28px;
+
+    .container{
+      max-width:800px;
+      margin:0 auto;
+      background:white;
+      padding:30px;
+      border-radius:20px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.1);
     }
-    h1{font-family:'Playfair Display', serif;color:var(--accent);margin:0;text-align:center}
-    h2{font-family:'Playfair Display', serif;margin-top:18px}
-    .meta{color:var(--muted);text-align:center;margin-top:6px;font-size:14px}
-    .content{margin-top:18px;font-size:17px;line-height:1.7;color:#222}
-    .countdown{margin-top:20px;font-size:14px;color:var(--muted);text-align:center}
-    .nav{display:flex;gap:8px;justify-content:center;margin-top:18px}
-    .btn{padding:8px 12px;border-radius:10px;border:0;cursor:pointer;font-weight:600}
-    .btn-primary{background:var(--accent);color:white}
-    .small{font-size:13px;color:var(--muted)}
-    pre{white-space:pre-wrap}
+
+    h1{
+      font-family:'Playfair Display', serif;
+      color:#E85D75;
+      text-align:center;
+      margin-bottom:10px;
+    }
+
+    .chapter{
+      margin-top:30px;
+      padding-bottom:20px;
+      border-bottom:1px solid #eee;
+    }
+
+    .chapter h2{
+      color:#E85D75;
+      font-family:'Playfair Display', serif;
+    }
+
+    .locked{
+      opacity:0.4;
+      pointer-events:none;
+      font-style:italic;
+    }
   </style>
 </head>
+
 <body>
-  <div class="card" role="main" aria-label="Kitap — her gün bir bölüm">
-    <h1>Bizim Hikâyemiz — Kitap</h1>
-    <div class="meta">Her gün bir bölüm açılır • Saat dilimi: Türkiye (UTC+3)</div>
 
-    <div class="nav" id="topNav" style="display:none">
-      <button class="btn" id="prevBtn">Önceki</button>
-      <button class="btn btn-primary" id="openAll">Bütün Bölümleri Göster</button>
-      <button class="btn" id="nextBtn">Sonraki</button>
-    </div>
+<div class="container">
+  <h1>Bizim Hikayemiz — Kitap</h1>
+  <div id="content">Yükleniyor...</div>
+</div>
 
-    <div id="chapterArea">
-      <!-- bölüm buraya gelecek -->
-    </div>
-
-    <div class="countdown" id="countdown"></div>
-    <div style="margin-top:14px;text-align:center" class="small">Şifreli erişim: esma5685</div>
-  </div>
 
 <script>
-// ---------- Şifre korumas ----------
-const pass = prompt("Kitap şifresi:");
+// Şifre kontrolü
+const pass = prompt("Şifre:");
 if(pass !== "esma5685"){
-  document.body.innerHTML = '<h2 style="text-align:center;margin-top:50px;font-family:Inter">Yanlış şifre.</h2>';
-  throw new Error('Wrong password');
+  document.body.innerHTML = "<h2 style='text-align:center;margin-top:40px;font-family:Inter'>Yanlış şifre.</h2>";
 }
 
-// ---------- Türkiye saati (UTC+3) ----------
-function getTurkeyNow(){
-  const d = new Date();
-  const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
-  return new Date(utc + 3 * 3600000);
-}
-
-// ---------- Bölümler (1–20 tam metin) ----------
+// Bölümler
 const chapters = [
-`BÖLÜM 1 — İlk Kıvılcımın Habercisi
+  `BÖLÜM 1 — (Buraya bölüm 1’in içeriğini ekleyebilirim)`,
+  `BÖLÜM 2 — (Buraya bölüm 2’nin içeriğini ekleyebilirim)`,
+  `BÖLÜM 3 — (Buraya bölüm 3’ün içeriğini ekleyebilirim)`,
 
-Bazen bir hikâye başlamadan önce bile içimizde bir şey kıpırdar. Henüz hiçbir şey olmamıştır; bir kelime, bir bakış, bir mesaj bile yoktur. Ama yine de içimizde bir yer, sanki yaklaşan bir şeyin farkındadır.
+  // Senin gönderdiğin bölümler:
+  `BÖLÜM 4 — İçimde Büyüyen Sessiz Fırtına
 
-Senle tanışmadan önce bile böyle bir his vardı içimde. Nedenini bilmiyordum, ama bir şey bekliyordum sanki.
-Bir ses…
-Bir tebessüm…
-Bir isim…
+Uzun geceler boyunca konuşurken kelimelerin arasına sakladığım bir şey vardı...`,
 
-Ve işte o isim, hiç beklemediğim anda bana geldi: Esma.
+  `BÖLÜM 5 — Mesafeyi İnatla Aşan Bir Kalp
 
-O an bilmediğim bir şey vardı: Bu hikâye çoktan başlamıştı bile.`,
+Mesafe… Dışarıdan bakan herkes için en büyük engel...`,
 
-`BÖLÜM 2 — İlk Mesajın Verdiği Sıcaklık
+  `BÖLÜM 6 — İlk Kıvılcım
 
-Bir ekranın ışığı bazen bir güneş kadar ısıtır insanı.
-Senin ilk mesajın tam olarak öyleydi.
+Bir gün konuşurken fark ettim...`,
 
-Sıradan bir kelime bile değildi aslında… içinde sıcaklık taşıyordu.
-Tonun yumuşaktı, samimiydi; sanki uzun zamandır tanıdığım birinin dönüşü gibiydi.
+  `BÖLÜM 7 — Seninle Değişen Dünya
 
-O gün ilk defa düşündüm:
-“Bu biri… diğerlerinden farklı.”
+Sen gelince her şey değişti...`,
 
-Ve o birkaç satırın içine saklanan o ince sıcaklık, günümü güzelleştirmekle kalmadı; bana bir süre sonra bağımlılık yapacağını da hissettirdi.`,
+  `BÖLÜM 8 — Bir İtirafın Eşiğinde
 
-`BÖLÜM 3 — Kalbe Değen Bir Ses
+Her gün kendime söyledim: “Bugün söyleyeceğim.”...`,
 
-Sadece mesajlar değildi beni çeken…
-Sesinin hayalini bile kurduğumu fark ettim sonra.
+  `BÖLÜM 9 — O An
 
-Henüz duymamıştım,
-henüz bilmem mümkün değildi,
-ama senin sesin zihnimde bir tını hâline gelmişti bile.
+Ve bir gün… hiçbir plan yokken… Cümle kendiliğinden döküldü...`,
 
-Belki içimdeki huzur onu şekillendirmişti…
-Belki de kalbim, sesini duymadan bile tanımıştı.
+  `BÖLÜM 10 — Artık 'Biz' Olmak
 
-O günden sonra her konuşmamızda aklımda tek bir düşünce vardı:
-“Bu hikâye bir yere gidiyor… hem de güzel bir yere.”`,
+Belki çok uzaklardaydık...`,
 
-`BÖLÜM 4 — İçimde Büyüyen Sessiz Fırtına
+  `BÖLÜM 11 — Her Gün Birbirine Bağlanan İki Kalp
 
-Uzun geceler boyunca konuşurken kelimelerin arasına sakladığım bir şey vardı. Tam olarak adını koyamadığım, ama varlığını her saniye hissettiğim bir şey… Beklediğim bir mesaj, bir emoji, bir ses… Ve sen geldiğinde içimde garip bir huzur dağılıyordu.
+Biz uzak mesafeydik… ama hiçbir zaman uzak olmadık...`,
 
-Sen uzak bir noktadaydın ama varlığın o kadar yakındı ki… Bazen elim ekrana uzanırken yakaladım kendimi; sanki dokunsam gerçekten hissedecekmişim gibi.
+  `BÖLÜM 12 — Seni Özlemek
 
-Zamanla bunun bir tesadüf olmadığını anladım. Ben sana alışıyordum. Hem de hiç fark etmeden.`,
+Uzaklık bazen acıtıyordu elbette...`,
 
-`BÖLÜM 5 — Mesafeyi İnatla Aşan Bir Kalp
+  `BÖLÜM 13 — Hayaller Kurarken
 
-Mesafe… Dışarıdan bakan herkes için en büyük engel. Ama biz öyle değildik.
+Gelecek hakkında konuştuğumuz günleri unutmuyorum...`,
 
-Ben seni kilometrelerle değil, hislerle tanıdım. Gülüşün okyanus gibi uzaklardan bile geçip geldi. Bir mesajın, bir bakışın, bir kelimen bile dünyamı değiştirmeye yetti.
+  `BÖLÜM 14 — Güven
 
-Uzaklık çoktu belki… ama sen bana yakındın. Her zamankinden daha yakın.`,
+Uzak bir ilişkide en zor bulunan şey… güvendir...`,
 
-`BÖLÜM 6 — İlk Kıvılcım
+  `BÖLÜM 15 — Her Mesaj Bir Adım Yakınlık
 
-Bir gün konuşurken fark ettim. Sıradan bir cümle kurmuştun, belki de farkında bile değildin. Ama kalbim o an bir anlığına hızlı attı.
+Bir mesaj atıyordun. Benim dünyam değişiyordu...`,
 
-O sırada kendime itiraf etmem gereken şeyi ilk defa düşündüm:
-“Ben… galiba gerçekten hissediyorum.”
+  `BÖLÜM 16 — Gece Konuşmaları
 
-Bu his öyle güçlüydü ki saklamaya çalışsam bile kelimelerimin arasından taşıp gidiyordu.`,
+Bazı geceler konuşmalarımız sabaha kadar sürüyordu...`,
 
-`BÖLÜM 7 — Seninle Değişen Dünya
+  `BÖLÜM 17 — İçimdeki Bağ
 
-Sen gelince her şey değişti. Dünya aynıydı belki… ama ben aynı değildim. Gün doğumları farklı görünüyordu. Şarkılar başka tınlıyordu. Küçük anlar bile yeni anlamlar kazanmıştı.
+Her geçen gün daha da derinleştim...`,
 
-Seninle tanıştıktan sonra hayat biraz daha renkli, biraz daha sıcak olmuştu.`,
+  `BÖLÜM 18 — Korkular ve Cesaret
 
-`BÖLÜM 8 — Bir İtirafın Eşiğinde
+Elbette korkuyordum...`,
 
-Her gün kendime söyledim: “Bugün söyleyeceğim.” Ama her defasında kalbim daha hızlı atıp susturdu beni. Çünkü seni kaybetmekten daha çok korktuğum hiçbir şey yoktu.
+  `BÖLÜM 19 — Bir Gelecek Tasarlamak
 
-Yine de saklamak çok zordu. Mesaj yazarken ellerimin titrediği anları hatırlıyorum. Bir emojiye bakıp anlam aradığım, bir kelimeyle saatlerce düşündüğüm günleri.`,
+Bir gün buluşacağımız günü düşündüm sık sık...`,
 
-`BÖLÜM 9 — O An
+  `BÖLÜM 20 — Hikâyemiz Daha Yeni Başlıyor
 
-Ve bir gün… hiçbir plan yokken… Cümle kendiliğinden döküldü dudaklarımdan — ya da parmaklarımdan.
-
-“Sanırım ben… sana alıştım.”
-
-Bir sessizlik oldu. Kalbim göğsümü kıracak gibiydi. Ekrana bakarken nefes bile alamıyordum.
-
-Sonra sen yazdın.
-
-O an anladım. Aramızdaki bağ yalnızca benim hissettiğim bir şey değildi.`,
-
-`BÖLÜM 10 — Artık ‘Biz’ Olmak
-
-Belki çok uzaklardaydık. Belki saat farkları, şehirler, yollar vardı. Ama o dakika… tüm mesafeler eridi. Artık “sen” ve “ben” değildik. Artık “biz”dik.
-
-Ve bu kelime öyle güçlüydü ki dünyanın her yerinden duyulabilirdi.`,
-
-`BÖLÜM 11 — Her Gün Birbirine Bağlanan İki Kalp
-
-Biz uzak mesafeydik… ama hiçbir zaman uzak olmadık. Her gece konuşmalarımız devam etti. Her sabah birbirimizin gününe dokunduk.
-
-Seninle her şey daha kolaydı. Dertler hafifliyordu. Sevinçler çoğalıyordu.`,
-
-`BÖLÜM 12 — Seni Özlemek
-
-Uzaklık bazen acıtıyordu elbette. Konuşamadığımız anlar, zamanın yavaşladığı dakikalar, bir dokunuşu hayal ettiğim geceler… Ama özlemek bile güzeldi. Çünkü özlediğim şey sendin.`,
-
-`BÖLÜM 13 — Hayaller Kurarken
-
-Gelecek hakkında konuştuğumuz günleri unutmuyorum. Bir buluşma hayali… Bir sarılma… Bir gün gerçeğe dönüşecek küçük hayaller biriktirdik.
-
-Ve her birini saklıyorum.`,
-
-`BÖLÜM 14 — Güven
-
-Uzak bir ilişkide en zor bulunan şey… güvendir. Ama biz onu zorlanmadan kurduk. Sen bana inandın, ben sana. Hiçbir şey zor değildi.
-
-Çünkü ikimiz de aynı cümleye inanıyorduk: “Gerçek olan mesafeye yenilmez.”`,
-
-`BÖLÜM 15 — Her Mesaj Bir Adım Yakınlık
-
-Bir mesaj atıyordun. Benim dünyam değişiyordu. O küçücük bildirim, kilometreleri ayağımın altına seriyordu. Bir fotoğrafın, bir cümlen, bir tebessümün… hepsi bir adım daha yaklaştırıyordu beni sana.`,
-
-`BÖLÜM 16 — Gece Konuşmaları
-
-Bazı geceler konuşmalarımız sabaha kadar sürüyordu. Uykum gelmesine rağmen kapatamıyordum. Çünkü seni bırakmak istemiyordum. Bir günün bitmesi, senden uzaklaşmak gibi geliyordu.`,
-
-`BÖLÜM 17 — İçimdeki Bağ
-
-Her geçen gün hislerim daha derinleşti. Seni düşünmediğim an neredeyse kalmadı. Sanki hayatıma çok önceden girmiş, sadece hatırlamamı beklemiş gibiydin.`,
-
-`BÖLÜM 18 — Korkular ve Cesaret
-
-Elbette korkuyordum. Uzaklık, gelecek, zaman… Ama sen bana cesaret oldun. Her kelimen bir güç, her dokunuşun bir umut gibiydi.`,
-
-`BÖLÜM 19 — Bir Gelecek Tasarlamak
-
-Bir gün buluşacağımız günü düşündüm sık sık. İlk sarılmayı… Kelimesiz anlaşmayı… Sözlerin değil, kalplerin konuştuğu o anı.
-
-Bir gün olacak. Buna inanıyorum.`,
-
-`BÖLÜM 20 — Hikâyemiz Daha Yeni Başlıyor
-
-Bunca mesafe, onca engel, binlerce kilometre… Ama biz hâlâ buradayız. Hâlâ aynı cümledeyiz. Hâlâ birbirimize bağlıyız.
-
-Bu kitap bitti diye hikâyemiz bitmiyor. Asıl hikâye şimdi başlıyor. Bir istekle başlayan tanışma… Şimdi bir ömürlük bağa dönüşüyor.
-
-Ben hazırım. Ve bu satırları okuyan sen… Biliyorum, sen de hazırsın.`
+Bu kitap bitti diye hikâyemiz bitmiyor...`
 ];
 
-// ---------- Başlangıç tarihi: 09 Aralık 2025 (TR saati) ----------
-const startDate = new Date("2025-12-09T00:00:00+03:00");
+// 1. bölümün açılacağı tarih: 09.12.2025
+// DİKKAT: Ay indexleri 0'dan başlar → 11 = Aralık
+const startDate = new Date(2025, 11, 9);
 
-// ---------- Yardımcı: paragraf formatlama ----------
-function toHTML(text){
-  // iki boş satırı paragraf ayırıcısı say
-  const parts = text.split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
-  return parts.map(p => `<p>${p.replace(/\n/g,'<br>')}</p>`).join('');
-}
+// Bugün (TR)
+const now = new Date(new Date().toLocaleString("en-US",{timeZone:"Europe/Istanbul"}));
 
-// ---------- Hesap: bugün hangi bölüm ----------
-// diff gün sayısı TR saatiyle
-function getIndexForToday(){
-  const now = getTurkeyNow();
-  // take UTC of start and now: compute diff in days using local TR midnights
-  // We'll compute difference of dates by constructing TR midnight for both and dividing by day.
-  const startUTC = Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate());
-  const nowTR = getTurkeyNow();
-  const nowUTC = Date.UTC(nowTR.getUTCFullYear(), nowTR.getUTCMonth(), nowTR.getUTCDate());
-  const diffDays = Math.floor((nowUTC - startUTC) / (1000*60*60*24));
-  return diffDays;
-}
+// Kaç gün geçti?
+const diffTime = now - startDate;
+const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-// ---------- render ----------
-const chapterArea = document.getElementById('chapterArea');
-const topNav = document.getElementById('topNav');
-const prevBtn = document.getElementById('prevBtn');
-const nextBtn = document.getElementById('nextBtn');
-const openAllBtn = document.getElementById('openAll');
+// Açılabilecek bölüm sayısı
+let unlocked = diffDays + 1;
+if(unlocked < 1) unlocked = 1;
+if(unlocked > chapters.length) unlocked = chapters.length;
 
-let currentIndex = getIndexForToday();
-if(currentIndex < 0) currentIndex = -1; // not started
-if(currentIndex >= chapters.length) currentIndex = chapters.length - 1; // finished -> show last
+// Çıktıyı oluştur
+let html = "";
 
-function render(index){
-  if(index < 0){
-    chapterArea.innerHTML = `
-      <div style="text-align:center;margin-top:36px">
-        <h2 class="small">Kitap henüz başlamadı.</h2>
-        <div class="small">İlk bölüm ${startDate.toLocaleDateString('tr-TR', {year:'numeric', month:'long', day:'numeric'})} tarihinde TR saatine göre açılacak.</div>
-      </div>
-    `;
-    topNav.style.display = 'none';
-    return;
-  }
-
-  const raw = chapters[index];
-  const title = raw.split("\n")[0] || `Bölüm ${index+1}`;
-  const body = raw.replace(title,'').trim();
-  chapterArea.innerHTML = `
-    <h2>${title}</h2>
-    <div class="meta small">Bölüm ${index+1} · Toplam ${chapters.length} bölüm</div>
-    <div class="content">${toHTML(body)}</div>
-  `;
-  topNav.style.display = 'flex';
-  // disable prev if at first available (or before start)
-  prevBtn.disabled = (index <= 0);
-  nextBtn.disabled = (index >= chapters.length - 1 || index >= getIndexForToday());
-}
-
-function updateCountdown(){
-  const now = getTurkeyNow();
-  // next midnight in TR
-  const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1);
-  // nextMidnight is local machine midnight; but we want TR midnight in TR timezone — construct using TR time components:
-  // We used getTurkeyNow for TR offset; nextMidnight (local) may differ, so instead build TR midnight using TR components
-  const trNow = getTurkeyNow();
-  const trNextMidnight = new Date(trNow.getFullYear(), trNow.getMonth(), trNow.getDate()+1, 0,0,0);
-  const remainMs = trNextMidnight - trNow;
-  const h = Math.floor(remainMs / 3600000);
-  const m = Math.floor((remainMs % 3600000) / 60000);
-  const s = Math.floor((remainMs % 60000) / 1000);
-
-  const countdownEl = document.getElementById('countdown');
-  if(getIndexForToday() < 0){
-    countdownEl.textContent = `İlk bölüm ${startDate.toLocaleDateString('tr-TR', {year:'numeric', month:'long', day:'numeric'})} tarihinde açılacak (TR saati).`;
-  } else if(getIndexForToday() >= chapters.length){
-    countdownEl.textContent = `Tüm bölümler yayınlandı. Son bölüm gösteriliyor.`;
+for(let i=0; i < chapters.length; i++){
+  if(i < unlocked){
+    html += `<div class="chapter">
+               <h2>Bölüm ${i+1}</h2>
+               <p>${chapters[i].replace(/\n/g,"<br>")}</p>
+             </div>`;
   } else {
-    countdownEl.textContent = `Yeni bölüm ${h} saat ${m} dk ${s} sn içinde açılacak (TR saati).`;
+    html += `<div class="chapter locked">
+               <h2>Bölüm ${i+1}</h2>
+               <p>Bu bölüm henüz açılmadı.</p>
+             </div>`;
   }
 }
 
-function goToPrev(){
-  if(currentIndex > 0){
-    currentIndex--;
-    render(currentIndex);
-  }
-}
-function goToNext(){
-  const todayIdx = getIndexForToday();
-  if(currentIndex < Math.min(todayIdx, chapters.length - 1)){
-    currentIndex++;
-    render(currentIndex);
-  }
-}
-function showAll(){
-  // reveal all chapters in a single scroll (useful for author preview)
-  const parts = chapters.map((c,i)=> {
-    const title = c.split("\n")[0] || `Bölüm ${i+1}`;
-    const body = c.replace(title,'').trim();
-    return `<hr><h3>${title}</h3>${toHTML(body)}`;
-  }).join('');
-  chapterArea.innerHTML = parts;
-  topNav.style.display='none';
-  document.getElementById('countdown').textContent = 'Tüm bölümler görüntüleniyor (önizleme).';
-}
-
-// Event listeners
-prevBtn.addEventListener('click', goToPrev);
-nextBtn.addEventListener('click', goToNext);
-openAllBtn.addEventListener('click', showAll);
-
-// initial render
-render(currentIndex);
-updateCountdown();
-setInterval(()=>{ updateCountdown(); }, 1000);
-
-// Helper: getTurkeyNow function used above
-function getTurkeyNow(){
-  const d = new Date();
-  const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
-  return new Date(utc + 3 * 3600000);
-}
+document.getElementById("content").innerHTML = html;
 </script>
+
 </body>
 </html>
