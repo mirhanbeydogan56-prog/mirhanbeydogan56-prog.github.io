@@ -29,7 +29,7 @@
     }
     @media (max-width:880px){.card{grid-template-columns:1fr;}.side{order:-1}}
 
-    .main{padding:36px 40px}
+    .main{padding:36px 40px;position:relative}
     h1{font-family:'Playfair Display', serif;margin:0 0 6px;font-size:34px;color:var(--accent)}
     h2{margin:0;font-size:15px;color:var(--muted);font-weight:600}
     .dates{margin-top:12px;color:var(--muted);font-size:14px}
@@ -58,11 +58,17 @@
 
     /* small decorative hearts */
     .hearts{position:absolute;left:-40px;top:-40px;opacity:0.12;transform:rotate(-15deg);font-size:120px}
+    .top-right { position:absolute; right:18px; top:18px; display:flex; gap:8px; align-items:center; }
+    .link-button { text-decoration:none; padding:8px 12px; border-radius:10px; background:rgba(255,255,255,0.9); color:#111; border:1px solid rgba(0,0,0,0.06); font-weight:600;}
   </style>
 </head>
 <body>
   <div class="card" role="main" aria-label="Esma için romantik site">
     <div class="main">
+      <div class="top-right">
+        <a class="link-button" href="book.html" id="bookLink">Kitap — Bölümler</a>
+      </div>
+
       <div class="hearts">❤ ❤ ❤</div>
       <h1>Esma — Bizim Hikâyemiz</h1>
       <h2>Seninle başlayan en güzel şey</h2>
@@ -89,58 +95,62 @@
         <p>Çünkü sen, Esma, her mısrada saklı bir umut, her nefeste bir evsindir.</p>
       </div>
 
-      
-          <div style="font-size:13px;color:var(--muted);margin-top:6px">19 Ağustos 2025 · 20 Ağustos 2025 — İlk tanışma ve özel anımız</div>
-        </div>
-      </div>
-
-      
-
-      
+      <div style="font-size:13px;color:var(--muted);margin-top:6px">19 Ağustos 2025 · 20 Ağustos 2025 — İlk tanışma ve özel anımız</div>
     </div>
 
-    
+    <div class="side">
+      <div class="photo" aria-hidden="true">
+        <!-- placeholder image; istersen kendi fotoğrafını koy -->
+        <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=placeholder" alt="Fotoğraf">
+      </div>
+
+      <div style="text-align:center">
+        <div class="heart">❤</div>
+        <div style="margin-top:6px;font-size:14px;color:var(--muted)">Bu sayfa sana özel. Paylaşmadan önce düşün.</div>
+        <div class="actions">
+          <a class="btn btn-primary" href="book.html">Kitabı Oku</a>
+          <button class="btn btn-ghost" id="downloadBtn">Yazdır / PDF</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
-    // Basit fotoğraf değiştirici ve PDF indirme (tarayıcı içinde) işlevselliği
-    
-
-    // Basit "PDF" indirme: şiiri yeni pencerede yazdırmak için açar
-    
-
-    // Kullanıcıya ilk açılışta tarihleri vurgulama: (opsiyonel)
-    (function highlightDates(){
-      const d = document.getElementById('dates');
-      d.style.transition='transform 0.6s ease';
-      d.style.transform='translateY(-4px)';
-      setTimeout(()=>{d.style.transform='none'},700);
+    // Şifre korumas (isteğe bağlı: ana sayfada da parola sorulacak)
+    (function askPass() {
+      try {
+        const pass = prompt('Sayfa şifresi (Esma için):');
+        if(pass !== 'esma5685'){
+          document.body.innerHTML = '<h2 style="text-align:center;margin-top:40px;font-family:Inter">Yanlış şifre.</h2>';
+          return;
+        }
+      } catch(e) { /* ignore */ }
     })();
-  </script>
-<script>
-// Şifre koruması
-const pass = prompt('Şifreyi girin:');
-if(pass !== 'esma5685'){
-  document.body.innerHTML = '<h2 style="text-align:center;margin-top:40px;font-family:Inter">Yanlış şifre.</h2>';
-}
 
-// 7 — Tıklayınca parlayan kalp
-addEventListener('click', e=>{
-  const h = document.createElement('div');
-  h.textContent = '❤';
-  h.style.position='fixed';
-  h.style.left = e.clientX+'px';
-  h.style.top = e.clientY+'px';
-  h.style.fontSize='30px';
-  h.style.opacity='1';
-  h.style.transition='all 1s ease';
-  document.body.appendChild(h);
-  setTimeout(()=>{
-    h.style.transform='translateY(-40px)';
-    h.style.opacity='0';
-  },10);
-  setTimeout(()=>h.remove(),1000);
-});
-</script>
+    // küçük yazdırma fonksiyonu
+    document.getElementById('downloadBtn').addEventListener('click', function(){
+      window.print();
+    });
+
+    // tıklayınca parlayan kalp
+    addEventListener('click', e=>{
+      const h = document.createElement('div');
+      h.textContent = '❤';
+      h.style.position='fixed';
+      h.style.left = (e.clientX - 10) + 'px';
+      h.style.top = (e.clientY - 10) + 'px';
+      h.style.fontSize='28px';
+      h.style.opacity='1';
+      h.style.pointerEvents='none';
+      h.style.transition='all 900ms ease';
+      document.body.appendChild(h);
+      setTimeout(()=>{
+        h.style.transform='translateY(-40px)';
+        h.style.opacity='0';
+      },10);
+      setTimeout(()=>h.remove(),950);
+    });
+  </script>
 </body>
 </html>
+
