@@ -1,1 +1,76 @@
+<!-- public/book.html -->
+const ws = new WebSocket(wsUrl);
+const el = {
+messages: document.getElementById('messages'),
+username: document.getElementById('username'),
+password: document.getElementById('password'),
+btnLogin: document.getElementById('btnLogin'),
+loginStatus: document.getElementById('loginStatus'),
+composer: document.getElementById('composer'),
+text: document.getElementById('text'),
+send: document.getElementById('send')
+};
 
+
+let me = null;
+
+
+function appendMsg(from, text, ts){
+const d = new Date(ts);
+const wrap = document.createElement('div');
+wrap.className = 'msg';
+const who = document.createElement('div');
+who.textContent = (from === me ? 'Ben' : from) + ' • ' + d.toLocaleTimeString();
+if (from === me) who.className = 'me';
+const body = document.createElement('div');
+body.textContent = text;
+wrap.appendChild(who);
+wrap.appendChild(body);
+el.messages.appendChild(wrap);
+el.messages.scrollTop = el.messages.scrollHeight;
+}
+
+
+ws.addEventListener('open', () => console.log('ws open'));
+ws.addEventListener('message', (ev) => {
+let msg; try{ msg = JSON.parse(ev.data); }catch(e){ return; }
+if (msg.type === 'auth'){
+if (msg.ok){
+me = msg.username;
+el.loginStatus.style.color = 'green';
+el.loginStatus.textContent = 'Giriş başarılı: ' + me;
+document.getElementById('login').style.display = 'none';
+el.composer.style.display = 'flex';
+} else {
+el.loginStatus.style.color = 'red';
+el.loginStatus.textContent = 'Giriş hatası';
+}
+}
+if (msg.type === 'chat'){
+appendMsg(msg.from, msg.text, msg.ts);
+}
+});
+
+
+el.btnLogin.addEventListener('click', () => {
+const username = el.username.value.trim();
+const password = el.password.value;
+if (!username || !password) { el.loginStatus.textContent = 'Eksik alan'; return; }
+// Demo: parola düz metin gönderiliyor — bu güvensizdir.
+ws.send(JSON.stringify({ type: 'auth', username, password }));
+});
+
+
+el.send.addEventListener('click', () => {
+const text = el.text.value.trim();
+if (!text) return;
+ws.send(JSON.stringify({ type: 'chat', text }));
+el.text.value = '';
+});
+
+
+el.text.addEventListener('keydown', (e) => { if (e.key === 'Enter') el.send.click(); });
+})();
+</script>
+</body>
+</html>
