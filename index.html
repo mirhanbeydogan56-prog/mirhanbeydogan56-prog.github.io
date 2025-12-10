@@ -13,6 +13,40 @@
             font-family: "Arial", sans-serif;
             text-align: center;
             line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        #passwordScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 9999;
+        }
+
+        #passwordScreen input {
+            padding: 12px 18px;
+            font-size: 18px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        #passwordScreen button {
+            padding: 10px 20px;
+            font-size: 18px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            background: #ffcc00;
         }
 
         h1 {
@@ -30,28 +64,45 @@
             border-radius: 12px;
         }
 
-        .love-list {
-            margin: 40px auto;
-            padding: 20px;
-            max-width: 900px;
-            background: #1a1a1a;
-            border-radius: 12px;
+        #flowerBtn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ffd700;
+            border: none;
+            padding: 12px 20px;
             font-size: 18px;
-            text-align: left;
+            border-radius: 10px;
+            cursor: pointer;
+            z-index: 50;
         }
 
-        .love-list p {
-            margin: 6px 0;
+        .flower {
+            position: fixed;
+            top: -50px;
+            font-size: 32px;
+            animation: fall 5s linear infinite;
         }
 
-        footer {
-            margin: 40px 0;
-            color: #aaa;
-            font-size: 14px;
+        @keyframes fall {
+            0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
         }
+
     </style>
 </head>
 <body>
+
+<!-- ŞİFRE EKRANI -->
+<div id="passwordScreen">
+    <h2>Giriş için şifre gerekli</h2>
+    <input type="password" id="passwordInput" placeholder="Şifreyi gir...">
+    <button onclick="checkPassword()">Giriş Yap</button>
+</div>
+
+<!-- NERGİS BUTONU -->
+<button id="flowerBtn" onclick="makeFlowers()">🌼 Nergis Uçsun</button>
+
 
 <h1>Senin İçin Sevgilim</h1>
 
@@ -72,70 +123,43 @@
         Şimdi her gün, o iki günün tekrarı gibi; taze, heyecanlı ve gerçek.<br><br>
 
         Bu satırlar küçük bir hediye, ama bil ki seni tarif etmeye yetmez—<br>
-        Çünkü sen, Esma, her mısrada saklı bir umut, her nefeste bir evsindir.
+        Çünkü sen, Esma, her mısrada saklı bir umut, her nefeste bir evsin.
     </p>
 </div>
 
-<div class="love-list">
-    <h2>💗 100 Dilde: Seni Seviyorum Esma 💗</h2>
+<script>
+    // ŞİFRE KONTROL
+    function checkPassword() {
+        const input = document.getElementById("passwordInput").value;
 
-    <p>1. Türkçe — Seni seviyorum Esma</p>
-    <p>2. İngilizce — I love you Esma</p>
-    <p>3. Almanca — Ich liebe dich Esma</p>
-    <p>4. Fransızca — Je t’aime Esma</p>
-    <p>5. İspanyolca — Te amo Esma</p>
-    <p>6. İtalyanca — Ti amo Esma</p>
-    <p>7. Portekizce — Eu te amo Esma</p>
-    <p>8. Rusça — Я люблю тебя, Эсма</p>
-    <p>9. Arapça — أحبك يا إسما</p>
-    <p>10. Farsça — اسما، دوستت دارم</p>
-    <p>11. Japonca — エスマ、愛してる</p>
-    <p>12. Çince — 我爱你，Esma</p>
-    <p>13. Korece — 에스마, 사랑해</p>
-    <p>14. Hintçe — मैं तुमसे प्यार करता हूँ Esma</p>
-    <p>15. Urduca — اسما، میں تم سے محبت کرتا ہوں</p>
-    <p>16. Yunanca — Σ' αγαπώ Esma</p>
-    <p>17. Hollandaca — Ik hou van je Esma</p>
-    <p>18. Danca — Jeg elsker dig Esma</p>
-    <p>19. İsveççe — Jag älskar dig Esma</p>
-    <p>20. Norveççe — Jeg elsker deg Esma</p>
-    <p>21. Fince — Rakastan sinua Esma</p>
-    <p>22. Çekçe — Miluji tě Esma</p>
-    <p>23. Slovakça — Ľúbim ťa Esma</p>
-    <p>24. Lehçe — Kocham cię Esma</p>
-    <p>25. Hırvatça — Volim te Esma</p>
-    <p>26. Sırpça — Волим те Esma</p>
-    <p>27. Boşnakça — Volim te Esma</p>
-    <p>28. Arnavutça — Të dua Esma</p>
-    <p>29. Macarca — Szeretlek Esma</p>
-    <p>30. Romence — Te iubesc Esma</p>
-    <p>31. Bulgarca — Обичам те Esma</p>
-    <p>32. Moldovca — Te iubesc Esma</p>
-    <p>33. Filipince — Mahal kita Esma</p>
-    <p>34. Malayca — Aku cinta padamu Esma</p>
-    <p>35. Endonezyaca — Aku cinta kamu Esma</p>
-    <p>36. Tayca — ฉันรักคุณ Esma</p>
-    <p>37. Vietnamca — Anh yêu em Esma</p>
-    <p>38. Laosça — ຂ້ອຍຮັກເຈົ້າ Esma</p>
-    <p>39. Kamboçya dili — ខ្ញុំ​ស្រឡាញ់​អ្នក Esma</p>
-    <p>40. Moğolca — Би чамд хайртай Esma</p>
-    <p>41. Nepali — म तिमीलाई माया गर्छु Esma</p>
-    <p>42. Tamilce — நான் உன்னை காதலிக்கிறேன் Esma</p>
-    <p>43. Bengali — আমি তোমাকে ভালোবাসি Esma</p>
-    <p>44. Pencapça — ਮੈਨੂੰ ਤੇਰੇ ਨਾਲ ਪਿਆਰ ਹੈ Esma</p>
-    <p>45. Kürtçe — Ez hej te dikim Esma</p>
-    <p>46. Zazaca — Ez to de hez dıkım Esma</p>
-    <p>47. Azerice — Səni sevirəm Esma</p>
-    <p>48. Kazakça — Мен сені жақсы көремін Esma</p>
-    <p>49. Kırgızca — Мен сени сүйөм Esma</p>
-    <p>50. Tacikçe — Ман туро дӯст медорам Esma</p>
+        if (input === "esma5685") {
+            document.getElementById("passwordScreen").style.display = "none";
+        } else {
+            alert("Şifre yanlış, tekrar dene aşkım 💛");
+        }
+    }
 
-    <p>…ve 50 dil daha eklenecek istersen ❤️</p>
-</div>
+    // NERGİS UÇURMA
+    function makeFlowers() {
+        for (let i = 0; i < 15; i++) {
+            let flower = document.createElement("div");
+            flower.classList.add("flower");
+            flower.innerHTML = "🌼";
 
-<footer>
-    © 2025 | Senin için hazırlandı
-</footer>
+            let size = Math.random() * 20 + 20;
+            flower.style.fontSize = size + "px";
+
+            flower.style.left = Math.random() * 100 + "vw";
+            flower.style.animationDuration = (Math.random() * 3 + 3) + "s";
+
+            document.body.appendChild(flower);
+
+            setTimeout(() => {
+                flower.remove();
+            }, 6000);
+        }
+    }
+</script>
 
 </body>
 </html>
