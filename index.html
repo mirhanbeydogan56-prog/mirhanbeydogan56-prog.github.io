@@ -1,156 +1,141 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Esma için — Bizim Hikâyemiz</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-  <style>
-    :root{
-      --bg1:#FFF1F3;
-      --bg2:#FDEDEC;
-      --accent:#E85D75;
-      --muted:#6b7280;
-      --card: rgba(255,255,255,0.7);
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
-      font-family:Inter,system-ui,Arial;
-      background: radial-gradient(circle at 10% 20%, var(--bg1), transparent 25%),
-                  linear-gradient(120deg,var(--bg1), var(--bg2));
-      color:#111;
-      padding:24px;
-    }
-    .card{
-      width:100%;max-width:900px;background:var(--card);backdrop-filter: blur(6px);
-      border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,0.08);overflow:hidden;
-      display:grid;grid-template-columns: 1fr 380px;
-    }
-    @media (max-width:880px){.card{grid-template-columns:1fr;}.side{order:-1}}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Senin İçin Sevgilim</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #111;
+            color: #fff;
+            font-family: "Arial", sans-serif;
+            text-align: center;
+            line-height: 1.7;
+        }
 
-    .main{padding:36px 40px;position:relative}
-    h1{font-family:'Playfair Display', serif;margin:0 0 6px;font-size:34px;color:var(--accent)}
-    h2{margin:0;font-size:15px;color:var(--muted);font-weight:600}
-    .dates{margin-top:12px;color:var(--muted);font-size:14px}
+        h1 {
+            margin-top: 40px;
+            font-size: 36px;
+            font-weight: bold;
+        }
 
-    .poem{
-      margin-top:24px;font-family:'Playfair Display',serif;font-size:20px;line-height:1.6;color:#2b2b2b
-    }
+        .poem {
+            margin: 30px auto;
+            padding: 20px;
+            max-width: 900px;
+            font-size: 20px;
+            background: #1a1a1a;
+            border-radius: 12px;
+        }
 
-    .meta{margin-top:28px;padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.5), rgba(255,255,255,0.35));display:flex;gap:12px;align-items:center}
-    .meta img{width:56px;height:56px;border-radius:12px;object-fit:cover;border:2px solid rgba(255,255,255,0.6)}
-    .meta .txt{font-size:14px;color:var(--muted)}
+        .love-list {
+            margin: 40px auto;
+            padding: 20px;
+            max-width: 900px;
+            background: #1a1a1a;
+            border-radius: 12px;
+            font-size: 18px;
+            text-align: left;
+        }
 
-    .side{padding:28px;background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));display:flex;flex-direction:column;gap:16px;align-items:center;justify-content:center}
-    .photo{width:100%;height:260px;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,#ffd9e0,#ffeef1);display:flex;align-items:center;justify-content:center;border:4px solid rgba(255,255,255,0.6)}
-    .photo img{width:100%;height:100%;object-fit:cover}
+        .love-list p {
+            margin: 6px 0;
+        }
 
-    .heart{font-size:46px;margin-top:8px;display:inline-block;animation:pulse 1.6s infinite}
-    @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
-
-    .actions{margin-top:10px;display:flex;gap:10px}
-    .btn{padding:10px 14px;border-radius:10px;border:0;font-weight:600;cursor:pointer}
-    .btn-primary{background:var(--accent);color:white}
-    .btn-ghost{background:transparent;border:1px solid rgba(0,0,0,0.06)}
-
-    footer{font-size:12px;color:var(--muted);text-align:center;padding:12px}
-
-    /* small decorative hearts */
-    .hearts{position:absolute;left:-40px;top:-40px;opacity:0.12;transform:rotate(-15deg);font-size:120px}
-    .top-right { position:absolute; right:18px; top:18px; display:flex; gap:8px; align-items:center; }
-    .link-button { text-decoration:none; padding:8px 12px; border-radius:10px; background:rgba(255,255,255,0.9); color:#111; border:1px solid rgba(0,0,0,0.06); font-weight:600;}
-  </style>
+        footer {
+            margin: 40px 0;
+            color: #aaa;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
-  <div class="card" role="main" aria-label="Esma için romantik site">
-    <div class="main">
-      <div class="top-right">
-        <a class="link-button" href="book.html" id="bookLink">Kitap — Bölümler</a>
-      </div>
 
-      <div class="hearts">❤ ❤ ❤</div>
-      <h1>Esma — Bizim Hikâyemiz</h1>
-      <h2>Seninle başlayan en güzel şey</h2>
-      <div class="dates" id="dates">
-        Tanışma: <strong>19 Ağustos 2025</strong> · İlk konuşma / özel an: <strong>20 Ağustos 2025</strong>
-      </div>
+<h1>Senin İçin Sevgilim</h1>
 
-      <div class="poem" id="poem">
-        <!-- Şiir burada -->
-        <p>Bir yaz akşamı, saatlerin susup dinlendiği yerde —</p>
-        <p>19 Ağustos 2025 geldiğinde dünya bir an durdu;</p>
-        <p>Gözlerinle buluştuğum o ilk an, içimde bir şarkı çalmaya başladı.</p>
+<div class="poem">
+    <p>
+        Bir yaz akşamı, saatlerin susup dinlendiği yerde —<br><br>
 
-        <p>Ertesi gün, 20 Ağustos 2025’e dönerken zaman daha yakın, daha sıcak oldu;</p>
-        <p>İki gün, iki nefes, ve kalbim seninle verdi ilk gerçek sözünü.</p>
+        19 Ağustos 2025 geldiğinde dünya bir an durdu;<br>
+        Gözlerinle buluştuğum o ilk an, içimde bir şarkı çalmaya başladı.<br><br>
 
-        <p>Esma, adın dudaklarımda bir huzur, gülüşünse sabahın aydınlığı;</p>
-        <p>Seninle her basit an bile bir şiire dönüşür, sıradan sokaklar bile şiir okur.</p>
+        Ertesi gün, 20 Ağustos 2025’e dönerken zaman daha yakın, daha sıcak oldu;<br>
+        İki gün, iki nefes, ve kalbim seninle verdi ilk gerçek sözünü.<br><br>
 
-        <p>İyi ki geldin; iyi ki rastladım sana, iyi ki ellerimiz kavuştu—</p>
-        <p>Şimdi her gün, o iki günün tekrarı gibi; taze, heyecanlı ve gerçek.</p>
+        Esma, adın dudaklarımda bir huzur, gülüşünse sabahın aydınlığı;<br>
+        Seninle her basit an bile bir şiire dönüşür, sıradan sokaklar bile şiir okur.<br><br>
 
-        <p>Bu satırlar küçük bir hediye, ama bil ki seni tarif etmeye yetmez—</p>
-        <p>Çünkü sen, Esma, her mısrada saklı bir umut, her nefeste bir evsindir.</p>
-      </div>
+        İyi ki geldin; iyi ki rastladım sana, iyi ki ellerimiz kavuştu—<br>
+        Şimdi her gün, o iki günün tekrarı gibi; taze, heyecanlı ve gerçek.<br><br>
 
-      <div style="font-size:13px;color:var(--muted);margin-top:6px">19 Ağustos 2025 · 20 Ağustos 2025 — İlk tanışma ve özel anımız</div>
-    </div>
+        Bu satırlar küçük bir hediye, ama bil ki seni tarif etmeye yetmez—<br>
+        Çünkü sen, Esma, her mısrada saklı bir umut, her nefeste bir evsindir.
+    </p>
+</div>
 
-    <div class="side">
-      <div class="photo" aria-hidden="true">
-        <!-- placeholder image; istersen kendi fotoğrafını koy -->
-        <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=placeholder" alt="Fotoğraf">
-      </div>
+<div class="love-list">
+    <h2>💗 100 Dilde: Seni Seviyorum Esma 💗</h2>
 
-      <div style="text-align:center">
-        <div class="heart">❤</div>
-        <div style="margin-top:6px;font-size:14px;color:var(--muted)">Bu sayfa sana özel. Paylaşmadan önce düşün.</div>
-        <div class="actions">
-          <a class="btn btn-primary" href="book.html">Kitabı Oku</a>
-          <button class="btn btn-ghost" id="downloadBtn">Yazdır / PDF</button>
-        </div>
-      </div>
-    </div>
-  </div>
+    <p>1. Türkçe — Seni seviyorum Esma</p>
+    <p>2. İngilizce — I love you Esma</p>
+    <p>3. Almanca — Ich liebe dich Esma</p>
+    <p>4. Fransızca — Je t’aime Esma</p>
+    <p>5. İspanyolca — Te amo Esma</p>
+    <p>6. İtalyanca — Ti amo Esma</p>
+    <p>7. Portekizce — Eu te amo Esma</p>
+    <p>8. Rusça — Я люблю тебя, Эсма</p>
+    <p>9. Arapça — أحبك يا إسما</p>
+    <p>10. Farsça — اسما، دوستت دارم</p>
+    <p>11. Japonca — エスマ、愛してる</p>
+    <p>12. Çince — 我爱你，Esma</p>
+    <p>13. Korece — 에스마, 사랑해</p>
+    <p>14. Hintçe — मैं तुमसे प्यार करता हूँ Esma</p>
+    <p>15. Urduca — اسما، میں تم سے محبت کرتا ہوں</p>
+    <p>16. Yunanca — Σ' αγαπώ Esma</p>
+    <p>17. Hollandaca — Ik hou van je Esma</p>
+    <p>18. Danca — Jeg elsker dig Esma</p>
+    <p>19. İsveççe — Jag älskar dig Esma</p>
+    <p>20. Norveççe — Jeg elsker deg Esma</p>
+    <p>21. Fince — Rakastan sinua Esma</p>
+    <p>22. Çekçe — Miluji tě Esma</p>
+    <p>23. Slovakça — Ľúbim ťa Esma</p>
+    <p>24. Lehçe — Kocham cię Esma</p>
+    <p>25. Hırvatça — Volim te Esma</p>
+    <p>26. Sırpça — Волим те Esma</p>
+    <p>27. Boşnakça — Volim te Esma</p>
+    <p>28. Arnavutça — Të dua Esma</p>
+    <p>29. Macarca — Szeretlek Esma</p>
+    <p>30. Romence — Te iubesc Esma</p>
+    <p>31. Bulgarca — Обичам те Esma</p>
+    <p>32. Moldovca — Te iubesc Esma</p>
+    <p>33. Filipince — Mahal kita Esma</p>
+    <p>34. Malayca — Aku cinta padamu Esma</p>
+    <p>35. Endonezyaca — Aku cinta kamu Esma</p>
+    <p>36. Tayca — ฉันรักคุณ Esma</p>
+    <p>37. Vietnamca — Anh yêu em Esma</p>
+    <p>38. Laosça — ຂ້ອຍຮັກເຈົ້າ Esma</p>
+    <p>39. Kamboçya dili — ខ្ញុំ​ស្រឡាញ់​អ្នក Esma</p>
+    <p>40. Moğolca — Би чамд хайртай Esma</p>
+    <p>41. Nepali — म तिमीलाई माया गर्छु Esma</p>
+    <p>42. Tamilce — நான் உன்னை காதலிக்கிறேன் Esma</p>
+    <p>43. Bengali — আমি তোমাকে ভালোবাসি Esma</p>
+    <p>44. Pencapça — ਮੈਨੂੰ ਤੇਰੇ ਨਾਲ ਪਿਆਰ ਹੈ Esma</p>
+    <p>45. Kürtçe — Ez hej te dikim Esma</p>
+    <p>46. Zazaca — Ez to de hez dıkım Esma</p>
+    <p>47. Azerice — Səni sevirəm Esma</p>
+    <p>48. Kazakça — Мен сені жақсы көремін Esma</p>
+    <p>49. Kırgızca — Мен сени сүйөм Esma</p>
+    <p>50. Tacikçe — Ман туро дӯст медорам Esma</p>
 
-  <script>
-    // Şifre korumas (isteğe bağlı: ana sayfada da parola sorulacak)
-    (function askPass() {
-      try {
-        const pass = prompt('Sayfa şifresi (Esma için):');
-        if(pass !== 'esma5685'){
-          document.body.innerHTML = '<h2 style="text-align:center;margin-top:40px;font-family:Inter">Yanlış şifre.</h2>';
-          return;
-        }
-      } catch(e) { /* ignore */ }
-    })();
+    <p>…ve 50 dil daha eklenecek istersen ❤️</p>
+</div>
 
-    // küçük yazdırma fonksiyonu
-    document.getElementById('downloadBtn').addEventListener('click', function(){
-      window.print();
-    });
+<footer>
+    © 2025 | Senin için hazırlandı
+</footer>
 
-    // tıklayınca parlayan kalp
-    addEventListener('click', e=>{
-      const h = document.createElement('div');
-      h.textContent = '❤';
-      h.style.position='fixed';
-      h.style.left = (e.clientX - 10) + 'px';
-      h.style.top = (e.clientY - 10) + 'px';
-      h.style.fontSize='28px';
-      h.style.opacity='1';
-      h.style.pointerEvents='none';
-      h.style.transition='all 900ms ease';
-      document.body.appendChild(h);
-      setTimeout(()=>{
-        h.style.transform='translateY(-40px)';
-        h.style.opacity='0';
-      },10);
-      setTimeout(()=>h.remove(),950);
-    });
-  </script>
 </body>
 </html>
-
