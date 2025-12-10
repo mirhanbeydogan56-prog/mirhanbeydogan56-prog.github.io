@@ -1,76 +1,149 @@
+
+```
+
+---
+
+## book.html (istemci)
+
+```html
 <!-- public/book.html -->
-const ws = new WebSocket(wsUrl);
-const el = {
-messages: document.getElementById('messages'),
-username: document.getElementById('username'),
-password: document.getElementById('password'),
-btnLogin: document.getElementById('btnLogin'),
-loginStatus: document.getElementById('loginStatus'),
-composer: document.getElementById('composer'),
-text: document.getElementById('text'),
-send: document.getElementById('send')
-};
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Basit Web Chat</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; display:flex; height:100vh }
+    #left { width:320px; border-right:1px solid #eee; padding:12px; box-sizing:border-box }
+    #main { flex:1; display:flex; flex-direction:column }
+    #messages { flex:1; padding:12px; overflow:auto }
+    .msg { margin-bottom:8px }
+    .me { font-weight:600 }
+    #composer { display:flex; padding:8px; border-top:1px solid #eee }
+    #composer input { flex:1; padding:8px }
+    #composer button { margin-left:8px }
+    #login { display:flex; flex-direction:column; gap:8px }
+  </style>
+</head>
+<body>
+  <div id="left">
+    <h3>Demo Login</h3>
+    <div id="login">
+      <input id="username" placeholder="Kullanıcı adı (ör: alice)" />
+      <input id="password" placeholder="Parola (demo)" type="password" />
+      <button id="btnLogin">Giriş Yap</button>
+      <div id="loginStatus" style="color:red"></div>
+      <hr />
+      <p><strong>Not:</strong> Gerçek parolalarınızı kullanmayın. Bu demo güvenli değildir.</p>
+    </div>
+  </div>
 
+  <div id="main">
+    <div id="messages"></div>
+    <div id="composer" style="display:none">
+      <input id="text" placeholder="Mesaj yaz..." />
+      <button id="send">Gönder</button>
+    </div>
+  </div>
 
-let me = null;
+<script>
+(function(){
+  const wsUrl = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host;
+  const ws = new WebSocket(wsUrl);
+  const el = {
+    messages: document.getElementById('messages'),
+    username: document.getElementById('username'),
+    password: document.getElementById('password'),
+    btnLogin: document.getElementById('btnLogin'),
+    loginStatus: document.getElementById('loginStatus'),
+    composer: document.getElementById('composer'),
+    text: document.getElementById('text'),
+    send: document.getElementById('send')
+  };
 
+  let me = null;
 
-function appendMsg(from, text, ts){
-const d = new Date(ts);
-const wrap = document.createElement('div');
-wrap.className = 'msg';
-const who = document.createElement('div');
-who.textContent = (from === me ? 'Ben' : from) + ' • ' + d.toLocaleTimeString();
-if (from === me) who.className = 'me';
-const body = document.createElement('div');
-body.textContent = text;
-wrap.appendChild(who);
-wrap.appendChild(body);
-el.messages.appendChild(wrap);
-el.messages.scrollTop = el.messages.scrollHeight;
-}
+  function appendMsg(from, text, ts){
+    const d = new Date(ts);
+    const wrap = document.createElement('div');
+    wrap.className = 'msg';
+    const who = document.createElement('div');
+    who.textContent = (from === me ? 'Ben' : from) + ' • ' + d.toLocaleTimeString();
+    if (from === me) who.className = 'me';
+    const body = document.createElement('div');
+    body.textContent = text;
+    wrap.appendChild(who);
+    wrap.appendChild(body);
+    el.messages.appendChild(wrap);
+    el.messages.scrollTop = el.messages.scrollHeight;
+  }
 
+  ws.addEventListener('open', () => console.log('ws open'));
+  ws.addEventListener('message', (ev) => {
+    let msg; try{ msg = JSON.parse(ev.data); }catch(e){ return; }
+    if (msg.type === 'auth'){
+      if (msg.ok){
+        me = msg.username;
+        el.loginStatus.style.color = 'green';
+        el.loginStatus.textContent = 'Giriş başarılı: ' + me;
+        document.getElementById('login').style.display = 'none';
+        el.composer.style.display = 'flex';
+      } else {
+        el.loginStatus.style.color = 'red';
+        el.loginStatus.textContent = 'Giriş hatası';
+      }
+    }
+    if (msg.type === 'chat'){
+      appendMsg(msg.from, msg.text, msg.ts);
+    }
+  });
 
-ws.addEventListener('open', () => console.log('ws open'));
-ws.addEventListener('message', (ev) => {
-let msg; try{ msg = JSON.parse(ev.data); }catch(e){ return; }
-if (msg.type === 'auth'){
-if (msg.ok){
-me = msg.username;
-el.loginStatus.style.color = 'green';
-el.loginStatus.textContent = 'Giriş başarılı: ' + me;
-document.getElementById('login').style.display = 'none';
-el.composer.style.display = 'flex';
-} else {
-el.loginStatus.style.color = 'red';
-el.loginStatus.textContent = 'Giriş hatası';
-}
-}
-if (msg.type === 'chat'){
-appendMsg(msg.from, msg.text, msg.ts);
-}
-});
+  el.btnLogin.addEventListener('click', () => {
+    const username = el.username.value.trim();
+    const password = el.password.value;
+    if (!username || !password) { el.loginStatus.textContent = 'Eksik alan'; return; }
+    // Demo: parola düz metin gönderiliyor — bu güvensizdir.
+    ws.send(JSON.stringify({ type: 'auth', username, password }));
+  });
 
+  el.send.addEventListener('click', () => {
+    const text = el.text.value.trim();
+    if (!text) return;
+    ws.send(JSON.stringify({ type: 'chat', text }));
+    el.text.value = '';
+  });
 
-el.btnLogin.addEventListener('click', () => {
-const username = el.username.value.trim();
-const password = el.password.value;
-if (!username || !password) { el.loginStatus.textContent = 'Eksik alan'; return; }
-// Demo: parola düz metin gönderiliyor — bu güvensizdir.
-ws.send(JSON.stringify({ type: 'auth', username, password }));
-});
-
-
-el.send.addEventListener('click', () => {
-const text = el.text.value.trim();
-if (!text) return;
-ws.send(JSON.stringify({ type: 'chat', text }));
-el.text.value = '';
-});
-
-
-el.text.addEventListener('keydown', (e) => { if (e.key === 'Enter') el.send.click(); });
+  el.text.addEventListener('keydown', (e) => { if (e.key === 'Enter') el.send.click(); });
 })();
 </script>
 </body>
 </html>
+```
+
+---
+
+## Nasıl kullanılır
+
+1. Bir klasör oluşturun, içine `server.js` koyun.
+2. `public` adında bir klasör oluşturun ve içine `book.html` koyun.
+3. `npm init -y && npm i express ws`
+4. `node server.js` çalıştırın.
+5. Sunucu çalıştığında aynı ağa bağlı farklı cihazlardan `http://<sunucu-ip>:3000` adresine gidin (ör: `http://192.168.1.5:3000`).
+6. Demo kullanıcılar: `alice` / `demo123` ve `bob` / `demo456` (yalnızca örnek — **gerçek parolalarınızı kullanmayın**).
+
+## Güvenlik uyarıları & geliştirme önerileri
+
+* Bu örnek **eğitim amaçlı**dır. Parolalar düz metinle saklanıyor ve iletiliyor. Gerçek kullanım için:
+
+  * HTTPS + WSS kullanın.
+  * Parolaları `bcrypt` ile hashleyip güvenli bir veritabanında saklayın.
+  * Oturum yönetimi (JWT veya session) ekleyin.
+  * Mesaj geçmişi için veritabanı kullanın (örn. SQLite/Postgres/MongoDB).
+  * DoS ve spam koruması, rate limiting ekleyin.
+
+Eğer isterseniz bu projeyi sizin isteklerinize göre özelleştiririm (örn. mesaj geçmişi, uçtan uca şifreleme değilse bile TLS, kullanıcı kayıt sistemi, profil fotoğrafı, vs.).
+
+---
+
+**Önemli:** Paylaştığınız gerçek parolaları burada kullanmadım ve kullanmanızı önermiyorum. Bu kodu test etmek isterseniz önce yeni, sadece demo amaçlı parolalar yaratın.
