@@ -1,149 +1,53 @@
-
-```
-
----
-
-## book.html (istemci)
-
-```html
-<!-- public/book.html -->
 <!doctype html>
-<html>
+<html lang="tr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Basit Web Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mirhan ❤ Esma - Aşk Gün Sayacı</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; display:flex; height:100vh }
-    #left { width:320px; border-right:1px solid #eee; padding:12px; box-sizing:border-box }
-    #main { flex:1; display:flex; flex-direction:column }
-    #messages { flex:1; padding:12px; overflow:auto }
-    .msg { margin-bottom:8px }
-    .me { font-weight:600 }
-    #composer { display:flex; padding:8px; border-top:1px solid #eee }
-    #composer input { flex:1; padding:8px }
-    #composer button { margin-left:8px }
-    #login { display:flex; flex-direction:column; gap:8px }
+    body{margin:0;font-family:Inter, sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0f1724;color:white}
+    .box{text-align:center;padding:40px;background:#1a2333;border-radius:16px;box-shadow:0 0 20px rgba(0,0,0,0.4)}
+    .days{font-size:72px;font-weight:700;color:#ff6b6b}
+    .meta{margin-top:8px;font-size:18px;color:#bfc7d5}
   </style>
 </head>
 <body>
-  <div id="left">
-    <h3>Demo Login</h3>
-    <div id="login">
-      <input id="username" placeholder="Kullanıcı adı (ör: alice)" />
-      <input id="password" placeholder="Parola (demo)" type="password" />
-      <button id="btnLogin">Giriş Yap</button>
-      <div id="loginStatus" style="color:red"></div>
-      <hr />
-      <p><strong>Not:</strong> Gerçek parolalarınızı kullanmayın. Bu demo güvenli değildir.</p>
-    </div>
+  <div class="box">
+    <div id="days" class="days">0</div>
+    <div id="subtitle" class="meta">Bu kadar gündür sevgiliyiz ❤️</div>
   </div>
 
-  <div id="main">
-    <div id="messages"></div>
-    <div id="composer" style="display:none">
-      <input id="text" placeholder="Mesaj yaz..." />
-      <button id="send">Gönder</button>
-    </div>
-  </div>
+  <script>
+    const start = "2025-08-20";
+
+    function calcDays(){
+      const startDate = new Date(start + "T00:00:00");
+      const now = new Date();
+      const s = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+      const t = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      return Math.floor((t - s)/86400000) + 1;
+    }
+
+    function update(){
+      document.getElementById("days").textContent = calcDays();
+    }
+    update();
+    setInterval(update, 60000);
+  </script>
+  <button id="noteBtn" style="margin-top:20px; padding:10px 20px; background:#ff6b6b; color:white; border:0; border-radius:10px; font-size:16px; cursor:pointer; display:block; margin-left:auto; margin-right:auto;">Bu not sana</button>
+
+<div id="noteBox" style="display:none; margin-top:20px; text-align:center; font-size:16px; color:#d0d6e1; line-height:1.6;">
+  Sen benim en güzel rastlantımsın
+  kalbime dokunan ve günlerimi güzelleştiren sıcaklık sensin
+  her geçen gün seni daha çok seviyorum
+  birlikte saydığımız her gün hikayemizin en güzel satırları oluyor 💕
+</div>
 
 <script>
-(function(){
-  const wsUrl = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host;
-  const ws = new WebSocket(wsUrl);
-  const el = {
-    messages: document.getElementById('messages'),
-    username: document.getElementById('username'),
-    password: document.getElementById('password'),
-    btnLogin: document.getElementById('btnLogin'),
-    loginStatus: document.getElementById('loginStatus'),
-    composer: document.getElementById('composer'),
-    text: document.getElementById('text'),
-    send: document.getElementById('send')
-  };
-
-  let me = null;
-
-  function appendMsg(from, text, ts){
-    const d = new Date(ts);
-    const wrap = document.createElement('div');
-    wrap.className = 'msg';
-    const who = document.createElement('div');
-    who.textContent = (from === me ? 'Ben' : from) + ' • ' + d.toLocaleTimeString();
-    if (from === me) who.className = 'me';
-    const body = document.createElement('div');
-    body.textContent = text;
-    wrap.appendChild(who);
-    wrap.appendChild(body);
-    el.messages.appendChild(wrap);
-    el.messages.scrollTop = el.messages.scrollHeight;
-  }
-
-  ws.addEventListener('open', () => console.log('ws open'));
-  ws.addEventListener('message', (ev) => {
-    let msg; try{ msg = JSON.parse(ev.data); }catch(e){ return; }
-    if (msg.type === 'auth'){
-      if (msg.ok){
-        me = msg.username;
-        el.loginStatus.style.color = 'green';
-        el.loginStatus.textContent = 'Giriş başarılı: ' + me;
-        document.getElementById('login').style.display = 'none';
-        el.composer.style.display = 'flex';
-      } else {
-        el.loginStatus.style.color = 'red';
-        el.loginStatus.textContent = 'Giriş hatası';
-      }
-    }
-    if (msg.type === 'chat'){
-      appendMsg(msg.from, msg.text, msg.ts);
-    }
+  document.getElementById("noteBtn").addEventListener("click", ()=>{
+    const box = document.getElementById("noteBox");
+    box.style.display = box.style.display === "none" ? "block" : "none";
   });
-
-  el.btnLogin.addEventListener('click', () => {
-    const username = el.username.value.trim();
-    const password = el.password.value;
-    if (!username || !password) { el.loginStatus.textContent = 'Eksik alan'; return; }
-    // Demo: parola düz metin gönderiliyor — bu güvensizdir.
-    ws.send(JSON.stringify({ type: 'auth', username, password }));
-  });
-
-  el.send.addEventListener('click', () => {
-    const text = el.text.value.trim();
-    if (!text) return;
-    ws.send(JSON.stringify({ type: 'chat', text }));
-    el.text.value = '';
-  });
-
-  el.text.addEventListener('keydown', (e) => { if (e.key === 'Enter') el.send.click(); });
-})();
 </script>
 </body>
 </html>
-```
-
----
-
-## Nasıl kullanılır
-
-1. Bir klasör oluşturun, içine `server.js` koyun.
-2. `public` adında bir klasör oluşturun ve içine `book.html` koyun.
-3. `npm init -y && npm i express ws`
-4. `node server.js` çalıştırın.
-5. Sunucu çalıştığında aynı ağa bağlı farklı cihazlardan `http://<sunucu-ip>:3000` adresine gidin (ör: `http://192.168.1.5:3000`).
-6. Demo kullanıcılar: `alice` / `demo123` ve `bob` / `demo456` (yalnızca örnek — **gerçek parolalarınızı kullanmayın**).
-
-## Güvenlik uyarıları & geliştirme önerileri
-
-* Bu örnek **eğitim amaçlı**dır. Parolalar düz metinle saklanıyor ve iletiliyor. Gerçek kullanım için:
-
-  * HTTPS + WSS kullanın.
-  * Parolaları `bcrypt` ile hashleyip güvenli bir veritabanında saklayın.
-  * Oturum yönetimi (JWT veya session) ekleyin.
-  * Mesaj geçmişi için veritabanı kullanın (örn. SQLite/Postgres/MongoDB).
-  * DoS ve spam koruması, rate limiting ekleyin.
-
-Eğer isterseniz bu projeyi sizin isteklerinize göre özelleştiririm (örn. mesaj geçmişi, uçtan uca şifreleme değilse bile TLS, kullanıcı kayıt sistemi, profil fotoğrafı, vs.).
-
----
-
-**Önemli:** Paylaştığınız gerçek parolaları burada kullanmadım ve kullanmanızı önermiyorum. Bu kodu test etmek isterseniz önce yeni, sadece demo amaçlı parolalar yaratın.
