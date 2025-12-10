@@ -11,7 +11,6 @@
       --accent:#ffd365;
       --muted:#c4c4c8;
     }
-    *{box-sizing:border-box}
     body{
       margin:0;padding:0;
       background:linear-gradient(180deg,var(--bg), #0b0b0d);
@@ -24,73 +23,69 @@
       position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
       background:rgba(0,0,0,0.98);z-index:9999;flex-direction:column;
     }
-    #passwordScreen h2{margin:0 0 12px 0;font-size:20px}
     #passwordScreen input{
-      padding:12px 14px;border-radius:10px;border:0;outline:none;font-size:16px;
-      text-align:center;width:260px;margin-bottom:12px;
+      padding:12px;border-radius:10px;border:0;width:240px;margin-bottom:10px;
+      text-align:center;font-size:17px;
     }
-    #passwordScreen button{padding:10px 16px;border-radius:10px;border:0;background:var(--accent);cursor:pointer;font-weight:700;color:#111}
+    #passwordScreen button{
+      padding:10px 16px;border-radius:10px;border:0;background:var(--accent);
+      cursor:pointer;font-weight:700;color:#111;font-size:15px
+    }
 
-    /* Sayfa içerik */
-    .container{max-width:980px;margin:36px auto;padding:28px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:14px}
-    header{display:flex;align-items:center;justify-content:space-between;gap:12px}
-    h1{font-family:'Playfair Display',serif;margin:0;color:var(--accent);font-size:34px}
-    .poem{margin-top:22px;background:var(--card);padding:20px;border-radius:12px;line-height:1.75;color:#fff}
-    .meta{color:var(--muted);margin-top:8px;font-size:14px}
+    /* içerik */
+    .container{max-width:900px;margin:40px auto;padding:25px;background:rgba(255,255,255,0.03);border-radius:14px}
+    h1{margin:0;color:var(--accent);font-size:32px;font-family:'Playfair Display',serif}
+    .poem{margin-top:20px;background:var(--card);padding:20px;border-radius:12px;line-height:1.7}
 
-    /* Nergis butonu */
+    /* nergis uçurma butonu */
     #flowerBtn{
-      position:fixed;right:20px;top:20px;z-index:60;
-      background:var(--accent);border:0;padding:10px 14px;border-radius:12px;font-weight:700;cursor:pointer;
-      box-shadow:0 6px 18px rgba(0,0,0,0.35)
+      position:fixed;top:20px;right:20px;
+      background:var(--accent);border:0;padding:10px 14px;border-radius:12px;
+      font-weight:700;cursor:pointer;z-index:50;
     }
-    #flowerBtn.active{background:#ffd100}
 
-    /* flower element */
+    /* Nergis animasyonu EKLENDİ */
+    @keyframes fall {
+      0%   { transform: translateY(-10vh) rotate(0deg); opacity:1; }
+      100% { transform: translateY(110vh) rotate(360deg); opacity:0; }
+    }
+
     .flower{
-      position:fixed;top:-60px;pointer-events:none;z-index:50;will-change:transform,opacity;
-      user-select:none;font-size:30px;filter:drop-shadow(0 6px 10px rgba(0,0,0,0.35));
+      position:fixed;
+      top:-50px;
+      pointer-events:none;
+      font-size:30px;
+      z-index:20;
+      will-change:transform,opacity;
+      animation: fall linear forwards;
     }
 
-    /* 50 dil listesi */
+    /* 50 dil */
     .love-list{
-      margin-top:26px;padding:18px;background:#0f1113;border-radius:10px;color:var(--muted);
-      display:none; /* başlangıçta gizli; butona basınca görünür */
+      margin-top:25px;background:#0f1113;padding:20px;border-radius:12px;display:none;
     }
-    .love-list h2{margin:0 0 12px 0;color:var(--accent)}
-    .love-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-    .love-item{font-size:15px;color:#fff;padding:6px;background:rgba(255,255,255,0.02);border-radius:6px}
+    .love-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+    .love-item{background:rgba(255,255,255,0.04);padding:8px;border-radius:6px;font-size:15px}
+    @media(max-width:700px){ .love-grid{grid-template-columns:1fr} }
 
-    footer{margin-top:26px;text-align:center;color:var(--muted);font-size:13px;padding-bottom:30px}
-    @media (max-width:720px){ .love-grid{grid-template-columns:repeat(1,1fr)} .container{margin:18px} h1{font-size:28px} }
   </style>
 </head>
 <body>
 
-<!-- Şifre ekranı -->
-<div id="passwordScreen" aria-hidden="false">
-  <h2>Siteye giriş için şifre gir</h2>
-  <input id="passwordInput" type="password" placeholder="Şifreyi gir..." aria-label="Şifre">
-  <div>
-    <button onclick="checkPassword()">Giriş Yap</button>
-  </div>
-  <p id="pwWrong" style="color:#ff8888;display:none;margin-top:12px">Şifre yanlış. Tekrar dene.</p>
+<!-- Şifre -->
+<div id="passwordScreen">
+  <h2>Şifreyi Gir</h2>
+  <input id="passwordInput" type="password" placeholder="Şifre">
+  <button onclick="checkPassword()">Giriş Yap</button>
+  <p id="pwWrong" style="color:#ff8080;display:none;margin-top:10px">Yanlış şifre</p>
 </div>
 
-<!-- Nergis butonu (sağ üst) -->
-<button id="flowerBtn" aria-pressed="false" title="Nergisleri başlat">🌼 Nergis Uçur</button>
+<button id="flowerBtn">🌼 Nergis Uçur</button>
 
-<!-- Sayfa -->
-<main class="container" aria-hidden="true" id="mainContent">
-  <header>
-    <h1>Senin İçin Sevgilim</h1>
-    <div style="text-align:right;color:var(--muted);font-size:13px">Özel &nbsp;•&nbsp; 2025</div>
-  </header>
+<main class="container" id="mainContent" style="display:none">
+  <h1>Senin İçin Sevgilim</h1>
 
-  <div class="meta">Bir şiir sana — ve 50 dilde küçük bir aşk mesajı</div>
-
-  <section class="poem" aria-labelledby="poemTitle">
-    <h2 id="poemTitle" style="margin-top:0;font-family:'Playfair Display', serif;color:var(--accent)">Bir yaz akşamı</h2>
+  <section class="poem">
     <p>
       Bir yaz akşamı, saatlerin susup dinlendiği yerde —<br><br>
 
@@ -111,33 +106,26 @@
     </p>
   </section>
 
-  <section class="love-list" id="loveList" aria-live="polite" aria-hidden="true">
-    <h2>💗 50 Dilde: Seni Seviyorum Esma</h2>
-    <div class="love-grid" id="loveGrid">
-      <!-- 50 dil öğeleri JS ile eklenecek -->
-    </div>
+  <section id="loveList" class="love-list">
+    <h2>💗 50 Dilde Seni Seviyorum Esma</h2>
+    <div id="loveGrid" class="love-grid"></div>
   </section>
-
-  <footer>© 2025 — Senin için hazırlandı</footer>
 </main>
 
 <script>
-  // --- Şifre ---
-  const CORRECT = "esma5685";
+  /* Şifre */
   function checkPassword(){
     const v = document.getElementById("passwordInput").value;
-    const wrong = document.getElementById("pwWrong");
-    if(v === CORRECT){
-      document.getElementById("passwordScreen").style.display = "none";
-      document.getElementById("mainContent").removeAttribute("aria-hidden");
-      document.getElementById("passwordScreen").setAttribute("aria-hidden","true");
+    if(v === "esma5685"){
+      document.getElementById("passwordScreen").style.display="none";
+      document.getElementById("mainContent").style.display="block";
     } else {
-      wrong.style.display = "block";
-      setTimeout(()=> wrong.style.display = "none", 2500);
+      document.getElementById("pwWrong").style.display="block";
+      setTimeout(()=> document.getElementById("pwWrong").style.display="none",2000);
     }
   }
 
-  // --- 50 dil (sabit liste) ---
+  /* 50 dil listesi */
   const love50 = [
     "Türkçe — Seni seviyorum Esma",
     "English — I love you Esma",
@@ -147,121 +135,91 @@
     "Italiano — Ti amo Esma",
     "Português — Eu te amo Esma",
     "Русский — Я люблю тебя, Эсма",
-    "العربية — أحبكِ يا إسماء",
-    "العربية (erkek) — أحبك يا إسماء",
-    "فارسی — اسما، دوستت دارم",
+    "العربية — أحبكِ إسماء",
+    "فارسی — اسما دوستت دارم",
     "日本語 — エスマ、愛してる",
-    "中文 (简体) — 我爱你，Esma",
-    "한국어 — 에스마, 사랑해",
+    "中文 — 我爱你 Esma",
+    "한국어 — 에스마 사랑해",
     "हिन्दी — मैं तुमसे प्यार करता हूँ Esma",
-    "اردو — اسما، میں تم سے محبت کرتا ہوں",
+    "اردو — اسما میں تم سے محبت کرتا ہوں",
     "Ελληνικά — Σ' αγαπώ Esma",
     "Nederlands — Ik hou van je Esma",
     "Dansk — Jeg elsker dig Esma",
     "Svenska — Jag älskar dig Esma",
     "Norsk — Jeg elsker deg Esma",
     "Suomi — Rakastan sinua Esma",
+    "Polski — Kocham cię Esma",
     "Čeština — Miluji tě Esma",
     "Slovenčina — Ľúbim ťa Esma",
-    "Polski — Kocham cię Esma",
     "Hrvatski — Volim te Esma",
     "Srpski — Волим те Esma",
     "Bosanski — Volim te Esma",
     "Shqip — Të dua Esma",
-    "Magyar — Szeretlek Esma",
     "Română — Te iubesc Esma",
+    "Magyar — Szeretlek Esma",
     "Български — Обичам те Esma",
-    "Moldovenească — Te iubesc Esma",
     "Tagalog — Mahal kita Esma",
-    "Bahasa Melayu — Aku cinta padamu Esma",
-    "Bahasa Indonesia — Aku cinta kamu Esma",
+    "Bahasa — Aku cinta kamu Esma",
     "ไทย — ฉันรักคุณ Esma",
     "Tiếng Việt — Anh yêu em Esma",
-    "ລາວ — ຂ້ອຍຮັກເຈົ້າ Esma",
-    "ខ្មែរ — ខ្ញុំស្រលាញ់អ្នក Esma",
-    "Монгол — Би чамд хайртай Esma",
-    "नेपाली — म तिमीलाई माया गर्छु Esma",
-    "தமிழ் — நான் உன்னை காதலிக்கிறேன் Esma",
-    "বাংলা — আমি তোমাকে ভালোবাসি Esma",
-    "ਪੰਜਾਬੀ — ਮੈਂ ਤੈਨੂੰ ਪਿਆਰ ਕਰਦਾ ਹਾਂ Esma",
-    "کوردی — Ez hej te dikim Esma",
     "Հայերեն — Սիրում եմ քեզ Esma",
-    "עברית — אני אוהב אותך Esma"
+    "עברית — אני אוהב אותך Esma",
+    "Kurdî — Ez hej te dikim Esma",
+    "ქართული — მიყვარხარ Esma",
+    "Afrikaans — Ek het jou lief Esma",
+    "Zulu — Ngiyakuthanda Esma",
+    "Swahili — Nakupenda Esma",
+    "Latviešu — Es tevi mīlu Esma",
+    "Eesti — Ma armastan sind Esma",
+    "Íslenska — Ég elska þig Esma",
+    "Malti — Inħobbok Esma",
+    "Slovenščina — Ljubim te Esma",
+    "Galego — Quérote Esma",
+    "Català — T’estimo Esma",
+    "Esperanto — Mi amas vin Esma"
   ];
 
-  // render 50 languages
-  const grid = document.getElementById("loveGrid");
-  love50.forEach(item => {
-    const d = document.createElement("div");
-    d.className = "love-item";
-    d.textContent = item;
-    grid.appendChild(d);
+  const loveGrid = document.getElementById("loveGrid");
+  love50.forEach(t=>{
+    const d=document.createElement("div");
+    d.className="love-item";
+    d.textContent=t;
+    loveGrid.appendChild(d);
   });
 
-  // --- Nergis uçurma: sürekli moda (toggle) ---
-  const flowerBtn = document.getElementById("flowerBtn");
-  let flowerInterval = null;
+  /* Nergis uçurma */
+  let interval = null;
 
-  function spawnFlower(){
-    const f = document.createElement("div");
-    f.className = "flower";
-    f.textContent = "🌼";
+  function createFlower(){
+    const f=document.createElement("div");
+    f.className="flower";
+    f.textContent="🌼";
 
-    const size = Math.random() * 28 + 18; // 18 - 46 px
-    f.style.fontSize = size + "px";
+    const size = Math.random()*22+24;
+    f.style.fontSize=size+"px";
 
-    // left position across entire viewport width (use vw random)
-    const left = Math.random() * 100;
-    f.style.left = left + "vw";
+    f.style.left = Math.random()*100+"vw";
 
-    // random horizontal drift via transform animation (we'll use CSS transform with transition)
-    const duration = Math.random() * 4 + 4; // 4 - 8s fall
-    f.style.animationDuration = duration + "s";
-    // slight rotation random initial
-    f.style.transform = `translateY(-10vh) rotate(${Math.random()*360}deg)`;
+    const duration = Math.random()*5+4;
+    f.style.animationDuration = duration+"s";
 
     document.body.appendChild(f);
 
-    // remove after duration + small buffer
-    setTimeout(() => {
-      f.remove();
-    }, (duration + 0.6) * 1000);
+    setTimeout(()=>f.remove(), duration*1000);
   }
 
-  function startFlowers(){
-    if(flowerInterval) return;
-    // spawn immediately some
-    for(let i=0;i<8;i++) setTimeout(spawnFlower, i*120);
-    // then keep spawning every 350ms
-    flowerInterval = setInterval(spawnFlower, 350);
-    flowerBtn.classList.add("active");
-    flowerBtn.textContent = "🌼 Nergis Uçuyor (Durdur)";
-    flowerBtn.setAttribute("aria-pressed","true");
-    // show language list
-    document.getElementById("loveList").style.display = "block";
-    document.getElementById("loveList").setAttribute("aria-hidden","false");
-  }
-
-  function stopFlowers(){
-    if(!flowerInterval) return;
-    clearInterval(flowerInterval);
-    flowerInterval = null;
-    flowerBtn.classList.remove("active");
-    flowerBtn.textContent = "🌼 Nergis Uçur";
-    flowerBtn.setAttribute("aria-pressed","false");
-  }
-
-  function toggleFlowers(){
-    if(flowerInterval) stopFlowers();
-    else startFlowers();
-  }
-
-  flowerBtn.addEventListener("click", toggleFlowers);
-
-  // Optional: start automatically after login? No — user wanted button controlled.
-  // Accessibility: allow Enter key on button
-  flowerBtn.addEventListener("keyup", e => { if(e.key === 'Enter') toggleFlowers(); });
-
+  document.getElementById("flowerBtn").onclick = ()=>{
+    if(interval){
+      clearInterval(interval);
+      interval=null;
+      document.getElementById("flowerBtn").textContent="🌼 Nergis Uçur";
+    } else {
+      interval=setInterval(createFlower,300);
+      createFlower();
+      document.getElementById("loveList").style.display="block";
+      document.getElementById("flowerBtn").textContent="🌼 Dur";
+    }
+  };
 </script>
 </body>
 </html>
