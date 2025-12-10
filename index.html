@@ -1,165 +1,267 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Senin İçin Sevgilim</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: #111;
-            color: #fff;
-            font-family: "Arial", sans-serif;
-            text-align: center;
-            line-height: 1.7;
-            overflow-x: hidden;
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Senin İçin Sevgilim</title>
+  <style>
+    :root{
+      --bg:#0f0f12;
+      --card:#15161a;
+      --accent:#ffd365;
+      --muted:#c4c4c8;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;padding:0;
+      background:linear-gradient(180deg,var(--bg), #0b0b0d);
+      color:#fff;font-family:Inter, Arial, sans-serif;
+      overflow-x:hidden;
+    }
 
-        #passwordScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            z-index: 9999;
-        }
+    /* Şifre ekranı */
+    #passwordScreen{
+      position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+      background:rgba(0,0,0,0.98);z-index:9999;flex-direction:column;
+    }
+    #passwordScreen h2{margin:0 0 12px 0;font-size:20px}
+    #passwordScreen input{
+      padding:12px 14px;border-radius:10px;border:0;outline:none;font-size:16px;
+      text-align:center;width:260px;margin-bottom:12px;
+    }
+    #passwordScreen button{padding:10px 16px;border-radius:10px;border:0;background:var(--accent);cursor:pointer;font-weight:700;color:#111}
 
-        #passwordScreen input {
-            padding: 12px 18px;
-            font-size: 18px;
-            border-radius: 8px;
-            border: none;
-            outline: none;
-            margin-bottom: 12px;
-            text-align: center;
-        }
+    /* Sayfa içerik */
+    .container{max-width:980px;margin:36px auto;padding:28px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:14px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    h1{font-family:'Playfair Display',serif;margin:0;color:var(--accent);font-size:34px}
+    .poem{margin-top:22px;background:var(--card);padding:20px;border-radius:12px;line-height:1.75;color:#fff}
+    .meta{color:var(--muted);margin-top:8px;font-size:14px}
 
-        #passwordScreen button {
-            padding: 10px 20px;
-            font-size: 18px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            background: #ffcc00;
-        }
+    /* Nergis butonu */
+    #flowerBtn{
+      position:fixed;right:20px;top:20px;z-index:60;
+      background:var(--accent);border:0;padding:10px 14px;border-radius:12px;font-weight:700;cursor:pointer;
+      box-shadow:0 6px 18px rgba(0,0,0,0.35)
+    }
+    #flowerBtn.active{background:#ffd100}
 
-        h1 {
-            margin-top: 40px;
-            font-size: 36px;
-            font-weight: bold;
-        }
+    /* flower element */
+    .flower{
+      position:fixed;top:-60px;pointer-events:none;z-index:50;will-change:transform,opacity;
+      user-select:none;font-size:30px;filter:drop-shadow(0 6px 10px rgba(0,0,0,0.35));
+    }
 
-        .poem {
-            margin: 30px auto;
-            padding: 20px;
-            max-width: 900px;
-            font-size: 20px;
-            background: #1a1a1a;
-            border-radius: 12px;
-        }
+    /* 50 dil listesi */
+    .love-list{
+      margin-top:26px;padding:18px;background:#0f1113;border-radius:10px;color:var(--muted);
+      display:none; /* başlangıçta gizli; butona basınca görünür */
+    }
+    .love-list h2{margin:0 0 12px 0;color:var(--accent)}
+    .love-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+    .love-item{font-size:15px;color:#fff;padding:6px;background:rgba(255,255,255,0.02);border-radius:6px}
 
-        #flowerBtn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #ffd700;
-            border: none;
-            padding: 12px 20px;
-            font-size: 18px;
-            border-radius: 10px;
-            cursor: pointer;
-            z-index: 50;
-        }
-
-        .flower {
-            position: fixed;
-            top: -50px;
-            font-size: 32px;
-            animation: fall 5s linear infinite;
-        }
-
-        @keyframes fall {
-            0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
-        }
-
-    </style>
+    footer{margin-top:26px;text-align:center;color:var(--muted);font-size:13px;padding-bottom:30px}
+    @media (max-width:720px){ .love-grid{grid-template-columns:repeat(1,1fr)} .container{margin:18px} h1{font-size:28px} }
+  </style>
 </head>
 <body>
 
-<!-- ŞİFRE EKRANI -->
-<div id="passwordScreen">
-    <h2>Giriş için şifre gerekli</h2>
-    <input type="password" id="passwordInput" placeholder="Şifreyi gir...">
+<!-- Şifre ekranı -->
+<div id="passwordScreen" aria-hidden="false">
+  <h2>Siteye giriş için şifre gir</h2>
+  <input id="passwordInput" type="password" placeholder="Şifreyi gir..." aria-label="Şifre">
+  <div>
     <button onclick="checkPassword()">Giriş Yap</button>
+  </div>
+  <p id="pwWrong" style="color:#ff8888;display:none;margin-top:12px">Şifre yanlış. Tekrar dene.</p>
 </div>
 
-<!-- NERGİS BUTONU -->
-<button id="flowerBtn" onclick="makeFlowers()">🌼 Nergis Uçsun</button>
+<!-- Nergis butonu (sağ üst) -->
+<button id="flowerBtn" aria-pressed="false" title="Nergisleri başlat">🌼 Nergis Uçur</button>
 
+<!-- Sayfa -->
+<main class="container" aria-hidden="true" id="mainContent">
+  <header>
+    <h1>Senin İçin Sevgilim</h1>
+    <div style="text-align:right;color:var(--muted);font-size:13px">Özel &nbsp;•&nbsp; 2025</div>
+  </header>
 
-<h1>Senin İçin Sevgilim</h1>
+  <div class="meta">Bir şiir sana — ve 50 dilde küçük bir aşk mesajı</div>
 
-<div class="poem">
+  <section class="poem" aria-labelledby="poemTitle">
+    <h2 id="poemTitle" style="margin-top:0;font-family:'Playfair Display', serif;color:var(--accent)">Bir yaz akşamı</h2>
     <p>
-        Bir yaz akşamı, saatlerin susup dinlendiği yerde —<br><br>
+      Bir yaz akşamı, saatlerin susup dinlendiği yerde —<br><br>
 
-        19 Ağustos 2025 geldiğinde dünya bir an durdu;<br>
-        Gözlerinle buluştuğum o ilk an, içimde bir şarkı çalmaya başladı.<br><br>
+      19 Ağustos 2025 geldiğinde dünya bir an durdu;<br>
+      Gözlerinle buluştuğum o ilk an, içimde bir şarkı çalmaya başladı.<br><br>
 
-        Ertesi gün, 20 Ağustos 2025’e dönerken zaman daha yakın, daha sıcak oldu;<br>
-        İki gün, iki nefes, ve kalbim seninle verdi ilk gerçek sözünü.<br><br>
+      Ertesi gün, 20 Ağustos 2025’e dönerken zaman daha yakın, daha sıcak oldu;<br>
+      İki gün, iki nefes, ve kalbim seninle verdi ilk gerçek sözünü.<br><br>
 
-        Esma, adın dudaklarımda bir huzur, gülüşünse sabahın aydınlığı;<br>
-        Seninle her basit an bile bir şiire dönüşür, sıradan sokaklar bile şiir okur.<br><br>
+      Esma, adın dudaklarımda bir huzur, gülüşünse sabahın aydınlığı;<br>
+      Seninle her basit an bile bir şiire dönüşür, sıradan sokaklar bile şiir okur.<br><br>
 
-        İyi ki geldin; iyi ki rastladım sana, iyi ki ellerimiz kavuştu—<br>
-        Şimdi her gün, o iki günün tekrarı gibi; taze, heyecanlı ve gerçek.<br><br>
+      İyi ki geldin; iyi ki rastladım sana, iyi ki ellerimiz kavuştu—<br>
+      Şimdi her gün, o iki günün tekrarı gibi; taze, heyecanlı ve gerçek.<br><br>
 
-        Bu satırlar küçük bir hediye, ama bil ki seni tarif etmeye yetmez—<br>
-        Çünkü sen, Esma, her mısrada saklı bir umut, her nefeste bir evsin.
+      Bu satırlar küçük bir hediye, ama bil ki seni tarif etmeye yetmez—<br>
+      Çünkü sen, Esma, her mısrada saklı bir umut, her nefeste bir evsindir.
     </p>
-</div>
+  </section>
+
+  <section class="love-list" id="loveList" aria-live="polite" aria-hidden="true">
+    <h2>💗 50 Dilde: Seni Seviyorum Esma</h2>
+    <div class="love-grid" id="loveGrid">
+      <!-- 50 dil öğeleri JS ile eklenecek -->
+    </div>
+  </section>
+
+  <footer>© 2025 — Senin için hazırlandı</footer>
+</main>
 
 <script>
-    // ŞİFRE KONTROL
-    function checkPassword() {
-        const input = document.getElementById("passwordInput").value;
-
-        if (input === "esma5685") {
-            document.getElementById("passwordScreen").style.display = "none";
-        } else {
-            alert("Şifre yanlış, tekrar dene aşkım 💛");
-        }
+  // --- Şifre ---
+  const CORRECT = "esma5685";
+  function checkPassword(){
+    const v = document.getElementById("passwordInput").value;
+    const wrong = document.getElementById("pwWrong");
+    if(v === CORRECT){
+      document.getElementById("passwordScreen").style.display = "none";
+      document.getElementById("mainContent").removeAttribute("aria-hidden");
+      document.getElementById("passwordScreen").setAttribute("aria-hidden","true");
+    } else {
+      wrong.style.display = "block";
+      setTimeout(()=> wrong.style.display = "none", 2500);
     }
+  }
 
-    // NERGİS UÇURMA
-    function makeFlowers() {
-        for (let i = 0; i < 15; i++) {
-            let flower = document.createElement("div");
-            flower.classList.add("flower");
-            flower.innerHTML = "🌼";
+  // --- 50 dil (sabit liste) ---
+  const love50 = [
+    "Türkçe — Seni seviyorum Esma",
+    "English — I love you Esma",
+    "Deutsch — Ich liebe dich Esma",
+    "Français — Je t’aime Esma",
+    "Español — Te amo Esma",
+    "Italiano — Ti amo Esma",
+    "Português — Eu te amo Esma",
+    "Русский — Я люблю тебя, Эсма",
+    "العربية — أحبكِ يا إسماء",
+    "العربية (erkek) — أحبك يا إسماء",
+    "فارسی — اسما، دوستت دارم",
+    "日本語 — エスマ、愛してる",
+    "中文 (简体) — 我爱你，Esma",
+    "한국어 — 에스마, 사랑해",
+    "हिन्दी — मैं तुमसे प्यार करता हूँ Esma",
+    "اردو — اسما، میں تم سے محبت کرتا ہوں",
+    "Ελληνικά — Σ' αγαπώ Esma",
+    "Nederlands — Ik hou van je Esma",
+    "Dansk — Jeg elsker dig Esma",
+    "Svenska — Jag älskar dig Esma",
+    "Norsk — Jeg elsker deg Esma",
+    "Suomi — Rakastan sinua Esma",
+    "Čeština — Miluji tě Esma",
+    "Slovenčina — Ľúbim ťa Esma",
+    "Polski — Kocham cię Esma",
+    "Hrvatski — Volim te Esma",
+    "Srpski — Волим те Esma",
+    "Bosanski — Volim te Esma",
+    "Shqip — Të dua Esma",
+    "Magyar — Szeretlek Esma",
+    "Română — Te iubesc Esma",
+    "Български — Обичам те Esma",
+    "Moldovenească — Te iubesc Esma",
+    "Tagalog — Mahal kita Esma",
+    "Bahasa Melayu — Aku cinta padamu Esma",
+    "Bahasa Indonesia — Aku cinta kamu Esma",
+    "ไทย — ฉันรักคุณ Esma",
+    "Tiếng Việt — Anh yêu em Esma",
+    "ລາວ — ຂ້ອຍຮັກເຈົ້າ Esma",
+    "ខ្មែរ — ខ្ញុំស្រលាញ់អ្នក Esma",
+    "Монгол — Би чамд хайртай Esma",
+    "नेपाली — म तिमीलाई माया गर्छु Esma",
+    "தமிழ் — நான் உன்னை காதலிக்கிறேன் Esma",
+    "বাংলা — আমি তোমাকে ভালোবাসি Esma",
+    "ਪੰਜਾਬੀ — ਮੈਂ ਤੈਨੂੰ ਪਿਆਰ ਕਰਦਾ ਹਾਂ Esma",
+    "کوردی — Ez hej te dikim Esma",
+    "Հայերեն — Սիրում եմ քեզ Esma",
+    "עברית — אני אוהב אותך Esma"
+  ];
 
-            let size = Math.random() * 20 + 20;
-            flower.style.fontSize = size + "px";
+  // render 50 languages
+  const grid = document.getElementById("loveGrid");
+  love50.forEach(item => {
+    const d = document.createElement("div");
+    d.className = "love-item";
+    d.textContent = item;
+    grid.appendChild(d);
+  });
 
-            flower.style.left = Math.random() * 100 + "vw";
-            flower.style.animationDuration = (Math.random() * 3 + 3) + "s";
+  // --- Nergis uçurma: sürekli moda (toggle) ---
+  const flowerBtn = document.getElementById("flowerBtn");
+  let flowerInterval = null;
 
-            document.body.appendChild(flower);
+  function spawnFlower(){
+    const f = document.createElement("div");
+    f.className = "flower";
+    f.textContent = "🌼";
 
-            setTimeout(() => {
-                flower.remove();
-            }, 6000);
-        }
-    }
+    const size = Math.random() * 28 + 18; // 18 - 46 px
+    f.style.fontSize = size + "px";
+
+    // left position across entire viewport width (use vw random)
+    const left = Math.random() * 100;
+    f.style.left = left + "vw";
+
+    // random horizontal drift via transform animation (we'll use CSS transform with transition)
+    const duration = Math.random() * 4 + 4; // 4 - 8s fall
+    f.style.animationDuration = duration + "s";
+    // slight rotation random initial
+    f.style.transform = `translateY(-10vh) rotate(${Math.random()*360}deg)`;
+
+    document.body.appendChild(f);
+
+    // remove after duration + small buffer
+    setTimeout(() => {
+      f.remove();
+    }, (duration + 0.6) * 1000);
+  }
+
+  function startFlowers(){
+    if(flowerInterval) return;
+    // spawn immediately some
+    for(let i=0;i<8;i++) setTimeout(spawnFlower, i*120);
+    // then keep spawning every 350ms
+    flowerInterval = setInterval(spawnFlower, 350);
+    flowerBtn.classList.add("active");
+    flowerBtn.textContent = "🌼 Nergis Uçuyor (Durdur)";
+    flowerBtn.setAttribute("aria-pressed","true");
+    // show language list
+    document.getElementById("loveList").style.display = "block";
+    document.getElementById("loveList").setAttribute("aria-hidden","false");
+  }
+
+  function stopFlowers(){
+    if(!flowerInterval) return;
+    clearInterval(flowerInterval);
+    flowerInterval = null;
+    flowerBtn.classList.remove("active");
+    flowerBtn.textContent = "🌼 Nergis Uçur";
+    flowerBtn.setAttribute("aria-pressed","false");
+  }
+
+  function toggleFlowers(){
+    if(flowerInterval) stopFlowers();
+    else startFlowers();
+  }
+
+  flowerBtn.addEventListener("click", toggleFlowers);
+
+  // Optional: start automatically after login? No — user wanted button controlled.
+  // Accessibility: allow Enter key on button
+  flowerBtn.addEventListener("keyup", e => { if(e.key === 'Enter') toggleFlowers(); });
+
 </script>
-
 </body>
 </html>
