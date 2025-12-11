@@ -1,49 +1,186 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Esma Chat</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial;
+        background: #0d0f18;
+        color: white;
+        overflow: hidden;
+    }
+
+    /* Şifre ekranı */
+    #passScreen {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #0d0f18;
+        color: white;
+        z-index: 10;
+    }
+
+    #passScreen input {
+        padding: 12px;
+        width: 200px;
+        border-radius: 10px;
+        border: none;
+        outline: none;
+        margin-top: 10px;
+    }
+
+    #passScreen button {
+        margin-top: 10px;
+        padding: 10px 20px;
+        background: #5d4cff;
+        border: none;
+        color: white;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+
+    /* Chat ekranı */
+    #chatBox {
+        display: none;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    #messages {
+        flex: 1;
+        overflow-y: auto;
+        padding-bottom: 20px;
+    }
+
+    .msg {
+        background: rgba(255,255,255,0.1);
+        margin: 6px 0;
+        padding: 10px;
+        border-radius: 10px;
+        max-width: 70%;
+    }
+
+    #inputArea {
+        display: flex;
+        gap: 10px;
+    }
+
+    #inputArea input {
+        flex: 1;
+        padding: 13px;
+        border-radius: 10px;
+        border: none;
+        outline: none;
+    }
+
+    #inputArea button {
+        padding: 13px 20px;
+        background: #5d4cff;
+        border-radius: 10px;
+        border: none;
+        color: white;
+        cursor: pointer;
+    }
+
+    /* Mobil */
+    @media (max-width: 600px) {
+        .msg {
+            max-width: 85%;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<!-- Şifre ekranı -->
+<div id="passScreen">
+    <h2>Giriş Şifresi</h2>
+    <input type="password" id="passInput" placeholder="Şifre">
+    <button onclick="checkPass()">Giriş Yap</button>
+</div>
+
+<!-- Chat ekranı -->
+<div id="chatBox">
+    <h3>✨ Esma Chat</h3>
+
+    <div id="messages"></div>
+
+    <div id="inputArea">
+        <input id="msgInput" placeholder="Mesaj yaz...">
+        <button onclick="sendMessage()">Gönder</button>
+    </div>
+</div>
+
+<!-- Firebase -->
 <script type="module">
-  // Firebase SDK'larını import et
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
-  import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-  // Yeni projenin config bilgileri
-  const firebaseConfig = {
-    apiKey: "AIzaSyAiQnxZ3FzqNk8Tn69jQ4mfnyPvQ9jfNrc",
-    authDomain: "newchat-66831.firebaseapp.com",
-    databaseURL: "https://newchat-66831-default-rtdb.firebaseio.com",
-    projectId: "newchat-66831",
-    storageBucket: "newchat-66831.firebasestorage.app",
-    messagingSenderId: "691479855616",
-    appId: "1:691479855616:web:bbcfc226b2ca4bbdcb4ee5",
-    measurementId: "G-TN28ETL3M3"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyAiQnxZ3FzqNk8Tn69jQ4mfnyPvQ9jfNrc",
+  authDomain: "newchat-66831.firebaseapp.com",
+  databaseURL: "https://newchat-66831-default-rtdb.firebaseio.com",
+  projectId: "newchat-66831",
+  storageBucket: "newchat-66831.firebasestorage.app",
+  messagingSenderId: "691479855616",
+  appId: "1:691479855616:web:bbcfc226b2ca4bbdcb4ee5",
+  measurementId: "G-TN28ETL3M3"
+};
 
-  // Firebase başlat
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-  const db = getDatabase(app);
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-  // Mesaj gönderme
-  window.sendMessage = function() {
-    let msg = document.getElementById("msg").value.trim();
-    if (msg === "") return;
+const messagesRef = ref(db, "messages");
 
-    push(ref(db, "messages"), {
-      text: msg,
-      time: Date.now()
+/* Mesaj Gönderme */
+window.sendMessage = function () {
+    let text = document.getElementById("msgInput").value.trim();
+    if (text === "") return;
+
+    push(messagesRef, {
+        msg: text,
+        time: Date.now()
     });
 
-    document.getElementById("msg").value = "";
-  };
+    document.getElementById("msgInput").value = "";
+};
 
-  // Mesajları dinleme
-  const messagesRef = ref(db, "messages");
-  onChildAdded(messagesRef, (data) => {
-    const msg = data.val();
+/* Mesajları Listeleme */
+onChildAdded(messagesRef, (snapshot) => {
+    let data = snapshot.val();
     let box = document.getElementById("messages");
 
-    box.innerHTML += `
-      <div class="bubble">${msg.text}</div>
-    `;
+    let div = document.createElement("div");
+    div.className = "msg";
+    div.innerText = data.msg;
 
+    box.appendChild(div);
     box.scrollTop = box.scrollHeight;
-  });
+});
+
+/* Şifre Kontrol */
+window.checkPass = function () {
+    let p = document.getElementById("passInput").value;
+
+    if (p === "esma5685") {
+        document.getElementById("passScreen").style.display = "none";
+        document.getElementById("chatBox").style.display = "flex";
+    } else {
+        alert("Yanlış şifre!");
+    }
+};
 </script>
+
+</body>
+</html>
