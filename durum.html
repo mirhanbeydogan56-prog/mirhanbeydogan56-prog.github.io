@@ -72,25 +72,75 @@
 </div>
 
 <script>
+  /* =============================
+     JSONBIN AYARLARI
+     Buraya kendi JSONBin bilgilerini koyacaksın:
+     ============================= */
+  const JSONBIN_URL = "https://api.jsonbin.io/v3/b/693a5d13d0ea881f4021354a"; // ← BURAYA kendi bin ID gelecek
+  const JSONBIN_KEY = "$2a$10$crw50rDviktX/qTN4XNj8eT9o6yJwPwv1wdlzXnu9YifkdKD9HxCG"; // ← BURAYA kendi API KEY gelecek
+
+  /* Varsayılan JSON formatı:
+     {
+       "esma": 50,
+       "mirhan": 50
+     }
+  */
+
+  /* ------------------
+     Şifreler
+  ------------------ */
   const PASSWORDS = { esma: "esma5685", mirhan: "mirhan5685" };
 
-  if(!localStorage.getItem("durum_esma")) localStorage.setItem("durum_esma", "50");
-  if(!localStorage.getItem("durum_mirhan")) localStorage.setItem("durum_mirhan", "50");
+  let DATA = { esma: 50, mirhan: 50 }; // JSONBin'den gelecek veri
 
+  async function loadData(){
+    try{
+      const res = await fetch(JSONBIN_URL, {
+        headers:{ "X-Master-Key": JSONBIN_KEY }
+      });
+      const json = await res.json();
+      DATA = json.record;
+    }catch(err){ alert("Veri yüklenemedi"); }
+  }
+
+  async function saveData(){
+    try{
+      await fetch(JSONBIN_URL, {
+        method:"PUT",
+        headers:{
+          "Content-Type": "application/json",
+          "X-Master-Key": JSONBIN_KEY
+        },
+        body: JSON.stringify(DATA)
+      });
+    }catch(err){ alert("Kaydedilemedi"); }
+  }
+
+  /* ------------------
+     Giriş İşlemi
+  ------------------ */
   const loginCard = document.getElementById("loginCard");
   const statusCard = document.getElementById("statusCard");
   const loginBtn = document.getElementById("loginBtn");
 
-  loginBtn.addEventListener("click", () => {
+  loginBtn.addEventListener("click", async () => {
     const p = document.getElementById("pass").value.trim();
     let user = null;
+
     if (p === PASSWORDS.esma) user = "esma";
     if (p === PASSWORDS.mirhan) user = "mirhan";
+
     if (!user) return alert("Şifre yanlış");
+
+    await loadData(); // JSONBin'den veri çek
+
     window.currentUser = user;
     showStatus(user);
   });
 
+  /* ------------------
+     Durum Gösterme
+  ------------------ */
   function showStatus(user){
     loginCard.style.display = "none";
     statusCard.style.display = "block";
@@ -103,33 +153,40 @@
 
     if(user === "esma"){ document.getElementById("otherLabel").textContent = "mirooo";
       nameTitle.textContent = "Esma'nın Durumu";
-      slider.value = localStorage.getItem("durum_esma");
+      slider.value = DATA.esma;
       percent.textContent = slider.value + "%";
       ownStatus.textContent = slider.value + "% enerji";
-      otherStatus.textContent = localStorage.getItem("durum_mirhan") + "% enerji";
+      otherStatus.textContent = DATA.mirhan + "% enerji";
     }
     if(user === "mirhan"){ document.getElementById("otherLabel").textContent = "esoo";
       nameTitle.textContent = "Mirhan'ın Durumu";
-      slider.value = localStorage.getItem("durum_mirhan");
+      slider.value = DATA.mirhan;
       percent.textContent = slider.value + "%";
       ownStatus.textContent = slider.value + "% enerji";
-      otherStatus.textContent = localStorage.getItem("durum_esma") + "% enerji";
+      otherStatus.textContent = DATA.esma + "% enerji";
     }
   }
 
+  /* Slider değişimi */
   document.getElementById("energySlider").addEventListener("input", e =>{
     document.getElementById("percent").textContent = e.target.value + "%";
   });
 
-  document.getElementById("saveBtn").addEventListener("click", ()=>{
-    const val = document.getElementById("energySlider").value;
+  /* Kaydet */
+  document.getElementById("saveBtn").addEventListener("click", async ()=>{
+    const val = Number(document.getElementById("energySlider").value);
     const user = window.currentUser;
-    if(user === "esma") localStorage.setItem("durum_esma", val);
-    if(user === "mirhan") localStorage.setItem("durum_mirhan", val);
+
+    if(user === "esma") DATA.esma = val;
+    if(user === "mirhan") DATA.mirhan = val;
+
+    await saveData();
+
     document.getElementById("ownStatus").textContent = val + "% enerji";
-    alert("Durum güncellendi!");
+    alert("Durum buluta kaydedildi!");
   });
 </script>
 
 </body>
 </html>
+
