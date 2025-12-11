@@ -7,67 +7,24 @@
   <style>
     :root{--bg:#f5f7fb;--card:#fff;--accent:#1a73e8}
     html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial}
-    body{display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,var(--bg),#e9eef9)}
-    .card{width:min(850px,92%);background:var(--card);padding:48px;border-radius:12px;box-shadow:0 10px 30px rgba(20,30,60,0.08);text-align:center}
-    h1{margin:0 0 12px;font-size:28px}
-    p.lead{margin:0 0 24px;color:#475569}
-    form{display:flex;gap:12px;justify-content:center;align-items:center}
-    input[name="q"]{flex:1;padding:14px 16px;border:1px solid #e6edf5;border-radius:10px;font-size:16px;outline:none}
-    input[name="q"]:focus{box-shadow:0 0 0 4px rgba(26,115,232,0.08);border-color:var(--accent)}
-    button{padding:12px 18px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:600;cursor:pointer}
-    .meta{margin-top:18px;color:#94a3b8;font-size:13px}
-    @media (max-width:520px){.card{padding:20px}input[name="q"]{padding:12px}}
+    body{display:flex;align-items:flex-start;justify-content:center;background:linear-gradient(180deg,var(--bg),#e9eef9);padding:40px 0}
+    .card{width:min(900px,92%);background:var(--card);padding:48px;border-radius:12px;box-shadow:0 10px 30px rgba(20,30,60,0.08);}
+    h1{text-align:center;margin:0 0 12px;font-size:28px}
+    .lead{text-align:center;margin:0 0 24px;color:#475569}
   </style>
 </head>
 <body>
   <main class="card">
     <h1>Hızlı Google Arama</h1>
-    <p class="lead">Aşağıya yazıp <strong>Enter</strong> veya butona tıklayarak Google'da arama yapabilirsin.</p>
+    <p class="lead">Google sonuçları bu sayfanın içinde görüntülenir.</p>
 
-    <!-- Basit form: Google aramasına `q` parametresi gönderir. Sonuçlar yeni sekmede açılır. -->
-    <form id="aramaFormu" role="search" onsubmit="ara(event)">
-      <input id="sorgu" name="q" type="search" placeholder="Bir şeyler ara..." aria-label="Ara" autocomplete="off" required>
-      <button type="submit">Ara</button>
-    </form>
+    <!-- Google CSE Arama Kutusu ve Sonuçlar -->
+    <div class="gcse-search"></div>
 
-    <div id="sonuclar" style="text-align:left;margin-top:32px;font-size:16px;line-height:1.5"></div>
-
-    <script>
-      async function ara(e){
-        e.preventDefault();
-        const q = document.getElementById('sorgu').value;
-        const sonucDiv = document.getElementById('sonuclar');
-        sonucDiv.innerHTML = 'Yükleniyor...';
-
-        // NOT: Buraya kendi API anahtarını ve CX kodunu girmen gerekiyor
-        const API_KEY = 'AIzaSyBWGqC4YoF2_72DFh7enFtpj51ELak5APo';
-        const CX = 'BURAYA_CX_KODU';
-
-        const url = `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CX}&q=${encodeURIComponent(q)}`;
-
-        try {
-          const res = await fetch(url);
-          const data = await res.json();
-
-          if(!data.items){
-            sonucDiv.innerHTML = 'Sonuç bulunamadı veya API yapılandırılmadı.';
-            return;
-          }
-
-          sonucDiv.innerHTML = data.items.map(i => `
-            <div style='margin-bottom:22px;'>
-              <a href='${i.link}' target='_blank' style='font-size:18px;color:#1a73e8;text-decoration:none;'>${i.title}</a>
-              <div style='color:#475569;'>${i.snippet}</div>
-            </div>
-          `).join('');
-
-        } catch(err){
-          sonucDiv.innerHTML = 'Bir hata oluştu: ' + err;
-        }
-      }
-    </script>
-
-    <p class="meta">Arama sonuçları bu sayfada (iframe içinde) gösterilecektir.</p>
   </main>
+
+  <!-- Google Custom Search Engine Script -->
+  <script async src="https://cse.google.com/cse.js?cx=65fe8ab330e4f4b6f"></script>
+
 </body>
 </html>
