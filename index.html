@@ -112,12 +112,27 @@
             font-weight: bold;
         }
 
-        /* ERTE BUTONU (YENİ EKLENDİ) */
+        /* ERTE BUTONU */
         #erteBtn {
             position: fixed;
             top: 170px; 
             right: 20px;
             background: #c29bff;
+            border: none;
+            padding: 10px 15px;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            z-index: 50;
+            font-weight: bold;
+        }
+
+        /* CHAT BUTONU (YENİ EKLENDİ) */
+        #chatBtn {
+            position: fixed;
+            top: 220px; 
+            right: 20px;
+            background: #7df7c2;
             border: none;
             padding: 10px 15px;
             font-size: 18px;
@@ -165,8 +180,11 @@
 <!-- 📘 GÜNLÜK BUTONU -->
 <button id="dailyBtn" onclick="window.location.href='daily.html'">online</button>
 
-<!-- 🟣 ERTE BUTONU (Yeni) -->
+<!-- 🟣 ERTE BUTONU -->
 <button id="erteBtn" onclick="window.location.href='erte.html'">erte</button>
+
+<!-- 💬 CHAT BUTONU (Yeni) -->
+<button id="chatBtn" onclick="window.location.href='chat.html'">chat</button>
 
 <h1>Senin İçin Sevgilim</h1>
 
