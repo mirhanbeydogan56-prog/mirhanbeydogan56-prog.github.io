@@ -1,137 +1,125 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<title>Watch Together + Live Chat</title>
-<style>
-body {
-  font-family: Arial;
-  display: flex;
-  gap: 20px;
-  padding: 20px;
-  background: #f2f2f2;
-}
-#videoArea {
-  width: 70%;
-}
-#chatBox {
-  width: 30%;
-  background: white;
-  padding: 10px;
-  border-radius: 10px;
-  height: 90vh;
-  display: flex;
-  flex-direction: column;
-}
-#messages {
-  flex: 1;
-  overflow-y: auto;
-  border: 1px solid #ccc;
-  padding: 10px;
-  margin-bottom: 10px;
-}
-input, button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 5px;
-}
-</style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Birlikte İzle + Sohbet</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #111;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #videoSection {
+            flex: 2;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+        #chatSection {
+            flex: 1;
+            background: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            border-left: 2px solid #333;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px 0;
+            width: 100%;
+            border-radius: 5px;
+            border: none;
+        }
+        #messages {
+            flex: 1;
+            overflow-y: auto;
+            background: #000;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        iframe {
+            width: 100%;
+            height: 80%;
+            border: none;
+            border-radius: 10px;
+        }
+    </style>
 </head>
-
 <body>
+    <div id="videoSection">
+        <h2>YouTube İzleme</h2>
+        <input id="videoInput" placeholder="YouTube Video ID gir (örn: dQw4w9WgXcQ)">
+        <button onclick="changeVideo()">Videoyu Aç</button>
+        <iframe id="ytPlayer" src="https://www.youtube.com/embed/" allowfullscreen></iframe>
+    </div>
 
-<div id="videoArea">
-  <h2>🎬 Birlikte YouTube İzleme</h2>
-  <input id="ytUrl" placeholder="YouTube linki yapıştır" />
-  <button onclick="loadVideo()">Videoyu Aç</button>
+    <div id="chatSection">
+        <h2>Sohbet</h2>
+        <div id="messages"></div>
+        <input id="msgInput" placeholder="Mesaj yaz...">
+        <button onclick="sendMessage()">Gönder</button>
+    </div>
 
-  <iframe id="ytFrame" width="100%" height="500px" style="margin-top:10px;" allowfullscreen></iframe>
-</div>
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js";
+        import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-database.js";
 
-<div id="chatBox">
-  <h2>💬 Canlı Sohbet</h2>
-  <div id="messages"></div>
+        const firebaseConfig = {
+            apiKey: "AIzaSyC1P0hCILgqHHInXmb5nWmCNyBSv2L7TGE",
+            authDomain: "erte-b64b8.firebaseapp.com",
+            databaseURL: "https://erte-b64b8-default-rtdb.firebaseio.com",
+            projectId: "erte-b64b8",
+            storageBucket: "erte-b64b8.firebasestorage.app",
+            messagingSenderId: "654545309522",
+            appId: "1:654545309522:web:646d307cf51529c33fb48b",
+            measurementId: "G-NEPG31DB06"
+        };
 
-  <input id="username" placeholder="İsmin" />
-  <input id="message" placeholder="Mesaj yaz..." />
-  <button onclick="sendMessage()">Gönder</button>
-</div>
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-<!-- FIREBASE -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, push, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        const videoRef = ref(db, "currentVideo");
+        const chatRef = ref(db, "chatMessages");
 
-// ==========================
-// 🔥 SENİN FIREBASE CONFIG KODUN
-// ==========================
-const firebaseConfig = {
-  apiKey: "AIzaSyC1P0hCILgqHHInXmb5nWmCNyBSv2L7TGE",
-  authDomain: "erte-b64b8.firebaseapp.com",
-  databaseURL: "https://erte-b64b8-default-rtdb.firebaseio.com",
-  projectId: "erte-b64b8",
-  storageBucket: "erte-b64b8.firebasestorage.app",
-  messagingSenderId: "654545309522",
-  appId: "1:654545309522:web:646d307cf51529c33fb48b",
-  measurementId: "G-NEPG31DB06"
-};
-// ==========================
+        // Video izleme senkronizasyonu
+        function changeVideo() {
+            const videoID = document.getElementById("videoInput").value;
+            if(videoID.trim() === "") return;
+            set(videoRef, videoID);
+        }
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+        onValue(videoRef, (snapshot) => {
+            const videoID = snapshot.val();
+            if(videoID) {
+                document.getElementById("ytPlayer").src = `https://www.youtube.com/embed/${videoID}`;
+            }
+        });
 
-// Video SENKRONİZASYON yeri
-const videoRef = ref(db, "video/url");
+        // Sohbet sistemi
+        function sendMessage() {
+            const msg = document.getElementById("msgInput").value;
+            if(msg.trim() === "") return;
+            push(chatRef, msg);
+            document.getElementById("msgInput").value = "";
+        }
 
-// Chat mesajları
-const chatRef = ref(db, "chat/messages");
-
-// *********** YouTube Video Yükleme ***********
-function loadVideo() {
-  const url = document.getElementById("ytUrl").value;
-  const videoId = url.split("v=")[1];
-  if (!videoId) return alert("Link yanlış!");
-
-  set(videoRef, videoId); // herkese gönder
-}
-
-// Video değişince iframe güncellenir
-onValue(videoRef, (snapshot) => {
-  const videoId = snapshot.val();
-  if (videoId) {
-    document.getElementById("ytFrame").src =
-      "https://www.youtube.com/embed/" + videoId + "?autoplay=1";
-  }
-});
-
-// *********** CHAT ***********
-function sendMessage() {
-  const user = document.getElementById("username").value;
-  const msg = document.getElementById("message").value;
-
-  if (!user || !msg) return;
-
-  push(chatRef, {
-    user,
-    msg,
-    time: Date.now()
-  });
-
-  document.getElementById("message").value = "";
-}
-
-onValue(chatRef, (snapshot) => {
-  const messagesDiv = document.getElementById("messages");
-  messagesDiv.innerHTML = "";
-
-  snapshot.forEach((child) => {
-    const data = child.val();
-    messagesDiv.innerHTML += `<p><b>${data.user}:</b> ${data.msg}</p>`;
-  });
-
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-});
-</script>
-
+        onValue(chatRef, (snapshot) => {
+            const messages = snapshot.val();
+            const msgBox = document.getElementById("messages");
+            msgBox.innerHTML = "";
+            for (let id in messages) {
+                msgBox.innerHTML += `<p>${messages[id]}</p>`;
+            }
+            msgBox.scrollTop = msgBox.scrollHeight;
+        });
+    </script>
 </body>
 </html>
