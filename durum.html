@@ -67,7 +67,7 @@
     <button id="saveBtn" style="background:#16a34a;margin-top:15px;">Kaydet</button>
   </div>
 
-  <h3 style="margin-top:25px;">Diğer kişi</h3>
+  <h3 style="margin-top:25px;" id="otherLabel">Diğer kişi</h3>
   <div class="status-box" id="otherStatus"></div>
 </div>
 
@@ -101,14 +101,14 @@
     const slider = document.getElementById("energySlider");
     const percent = document.getElementById("percent");
 
-    if(user === "esma"){
+    if(user === "esma"){ document.getElementById("otherLabel").textContent = "mirooo";
       nameTitle.textContent = "Esma'nın Durumu";
       slider.value = localStorage.getItem("durum_esma");
       percent.textContent = slider.value + "%";
       ownStatus.textContent = slider.value + "% enerji";
       otherStatus.textContent = localStorage.getItem("durum_mirhan") + "% enerji";
     }
-    if(user === "mirhan"){
+    if(user === "mirhan"){ document.getElementById("otherLabel").textContent = "esoo";
       nameTitle.textContent = "Mirhan'ın Durumu";
       slider.value = localStorage.getItem("durum_mirhan");
       percent.textContent = slider.value + "%";
