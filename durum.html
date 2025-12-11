@@ -63,12 +63,33 @@
         </div></div></div>
 
 <aside class="card controls">
-  <h3>DC Çarkı hihihihi</h3>
+  <h3>DC Çarkı Kontrolleri</h3>
   <div class="row"><button id="startBtn">Çevir</button></div>
   <footer>İstediğiniz gibi değiştirebilirsiniz.</footer>
 </aside>
 
-    
+    <!-- Chat alanı -->
+    <div class="card" id="chatCard">
+      <h3 style="margin-top:0">Sohbet (giriş gerekli)</h3>
+
+      <div id="loginBox" style="display:block">
+        <label style="display:block;margin-bottom:8px">Site parolası:</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="passInput" type="password" placeholder="Parola girin" style="flex:1;padding:8px;border-radius:6px;border:1px solid #233" />
+          <button id="passBtn" style="padding:8px 10px;border-radius:6px;background:var(--accent);border:0;cursor:pointer;color:#022">Giriş</button>
+        </div>
+        <div id="passErr" style="color:#ff9999;margin-top:8px;display:none">Hatalı parola</div>
+      </div>
+
+      <div id="chatUI" style="display:none;flex-direction:column;gap:8px">
+        <div id="messages" style="height:260px;overflow:auto;border:1px solid rgba(255,255,255,0.03);padding:8px;border-radius:8px;background:rgba(255,255,255,0.01)"></div>
+        <form id="msgForm" style="display:flex;gap:8px;margin-top:6px">
+          <input id="msgInput" placeholder="Mesaj yazın..." style="flex:1;padding:8px;border-radius:6px;border:1px solid #233" />
+          <button type="submit" style="padding:8px 12px;border-radius:6px;background:var(--accent);border:0;cursor:pointer;color:#022">Gönder</button>
+        </form>
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -103,6 +124,77 @@ startBtn.addEventListener('click', ()=>{
   }
   requestAnimationFrame(animate);
 });
+</script>
+
+<!-- Firebase chat scripts -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script>
+// Basit parola kontrollü sohbet (ÖNEMLİ: bu frontend parola güvenli değildir, sadece demo amaçlı.)
+const SITE_PASSWORD = 'esma5685';
+const passInput = document.getElementById('passInput');
+const passBtn = document.getElementById('passBtn');
+const passErr = document.getElementById('passErr');
+const loginBox = document.getElementById('loginBox');
+const chatUI = document.getElementById('chatUI');
+const messagesEl = document.getElementById('messages');
+const msgForm = document.getElementById('msgForm');
+const msgInput = document.getElementById('msgInput');
+
+passBtn.addEventListener('click', ()=>{
+  const v = passInput.value || '';
+  if(v === SITE_PASSWORD){
+    loginBox.style.display='none';
+    chatUI.style.display='flex';
+    initChat();
+  } else {
+    passErr.style.display='block';
+  }
+});
+
+// FIREBASE: lütfen kendi projende aşağıdaki config'i değiştir
+const firebaseConfig = {
+  apiKey: "AIzaSyBsHcKaTIifxx8VhcJIkzVgp0Ywgej7NCA",
+  authDomain: "dcchat-7fa9a.firebaseapp.com",
+  databaseURL: "https://dcchat-7fa9a-default-rtdb.firebaseio.com",
+  projectId: "dcchat-7fa9a",
+  storageBucket: "dcchat-7fa9a.firebasestorage.app",
+  messagingSenderId: "993124998740",
+  appId: "1:993124998740:web:3819bca9b8bc5496a797c1",
+  measurementId: "G-CLEGHY1L0H"
+};
+
+function initChat(){
+  if(window._chatInited) return;
+  window._chatInited = true;
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // listen messages ordered by timestamp
+  db.collection('messages').orderBy('ts').onSnapshot(snap=>{
+    messagesEl.innerHTML = '';
+    snap.forEach(doc=>{
+      const d = doc.data();
+      const el = document.createElement('div');
+      el.style.padding='6px 8px';
+      el.style.marginBottom='6px';
+      el.style.borderRadius='8px';
+      el.style.background='rgba(255,255,255,0.02)';
+      el.style.color='inherit';
+      el.textContent = `${d.text}`;
+      messagesEl.appendChild(el);
+    });
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  });
+
+  msgForm.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const txt = msgInput.value.trim();
+    if(!txt) return;
+    await db.collection('messages').add({ text: txt, ts: firebase.firestore.FieldValue.serverTimestamp() });
+    msgInput.value = '';
+  });
+}
 </script>
 </body>
 </html>
