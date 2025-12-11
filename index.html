@@ -1,4 +1,4 @@
-e<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -9,7 +9,7 @@ e<!DOCTYPE html>
         body {
             margin: 0;
             padding: 0;
-            background: #111;
+            background: #111;  
             color: #fff;
             font-family: "Arial", sans-serif;
             text-align: center;
@@ -17,7 +17,6 @@ e<!DOCTYPE html>
             overflow-x: hidden;
         } 
         
-
         /* ŞİFRE EKRANI */
         #passwordScreen {
             position: fixed;
@@ -97,6 +96,8 @@ e<!DOCTYPE html>
             z-index: 50;
             font-weight: bold;
         } 
+
+        /* ONLINE BUTONU */
         #dailyBtn {
             position: fixed;
             top: 120px; 
@@ -109,8 +110,22 @@ e<!DOCTYPE html>
             cursor: pointer;
             z-index: 50;
             font-weight: bold;
-}
+        }
 
+        /* ERTE BUTONU (YENİ EKLENDİ) */
+        #erteBtn {
+            position: fixed;
+            top: 170px; 
+            right: 20px;
+            background: #c29bff;
+            border: none;
+            padding: 10px 15px;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            z-index: 50;
+            font-weight: bold;
+        }
 
         /* ÇİÇEK ANİMASYONU */
         .flower {
@@ -146,10 +161,13 @@ e<!DOCTYPE html>
 
 <!-- 📖 BOOK BUTONU -->
 <button id="bookBtn" onclick="window.location.href='book.html'">sayac</button>
-    
+
 <!-- 📘 GÜNLÜK BUTONU -->
 <button id="dailyBtn" onclick="window.location.href='daily.html'">online</button>
-   
+
+<!-- 🟣 ERTE BUTONU (Yeni) -->
+<button id="erteBtn" onclick="window.location.href='erte.html'">erte</button>
+
 <h1>Senin İçin Sevgilim</h1>
 
 <div class="poem">
