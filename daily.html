@@ -24,12 +24,13 @@
             padding: 10px;
         }
         #chatSection {
-            flex: 1;
+            flex: 0.7;
             background: #1a1a1a;
             display: flex;
             flex-direction: column;
             padding: 10px;
             border-top: 2px solid #333;
+            overflow: hidden;
         }
         input, button {
             padding: 10px;
@@ -45,6 +46,7 @@
             background: #000;
             padding: 10px;
             border-radius: 5px;
+            max-height: 200px;
         }
         iframe {
             width: 100%;
@@ -69,7 +71,7 @@
         <h2>Sohbet</h2>
         <div id="messages"></div>
         <input id="msgInput" placeholder="Mesaj yaz...">
-        <button id="sendBtn">Gönder</button>
+        <button id="sendBtn" style="width:150px; align-self:flex-end; margin-top:5px;">Gönder</button>
     </div>
 
     <!-- Firebase -->
