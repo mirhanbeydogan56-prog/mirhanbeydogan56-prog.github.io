@@ -1,0 +1,49 @@
+<script type="module">
+  // Firebase SDK'larını import et
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+  import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+  // Yeni projenin config bilgileri
+  const firebaseConfig = {
+    apiKey: "AIzaSyAiQnxZ3FzqNk8Tn69jQ4mfnyPvQ9jfNrc",
+    authDomain: "newchat-66831.firebaseapp.com",
+    databaseURL: "https://newchat-66831-default-rtdb.firebaseio.com",
+    projectId: "newchat-66831",
+    storageBucket: "newchat-66831.firebasestorage.app",
+    messagingSenderId: "691479855616",
+    appId: "1:691479855616:web:bbcfc226b2ca4bbdcb4ee5",
+    measurementId: "G-TN28ETL3M3"
+  };
+
+  // Firebase başlat
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const db = getDatabase(app);
+
+  // Mesaj gönderme
+  window.sendMessage = function() {
+    let msg = document.getElementById("msg").value.trim();
+    if (msg === "") return;
+
+    push(ref(db, "messages"), {
+      text: msg,
+      time: Date.now()
+    });
+
+    document.getElementById("msg").value = "";
+  };
+
+  // Mesajları dinleme
+  const messagesRef = ref(db, "messages");
+  onChildAdded(messagesRef, (data) => {
+    const msg = data.val();
+    let box = document.getElementById("messages");
+
+    box.innerHTML += `
+      <div class="bubble">${msg.text}</div>
+    `;
+
+    box.scrollTop = box.scrollHeight;
+  });
+</script>
