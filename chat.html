@@ -192,7 +192,7 @@
     function sendMsg() {
         const text = input.value.trim();
         if (!text) return;
-        push(chatRef, { text, sender: "me", ts: Date.now() });
+        push(chatRef, { text, sender: currentUser, ts: Date.now() });
         input.value = "";
         set(typingRef, "");
     }
@@ -234,13 +234,25 @@
 </script>
 
 <script>
-// 🔐 Şifre sistemi ― PIN: esma5685
+// 🔐 Şifre sistemi ― PIN: esma5685 / mirhan5685
 const lockScreen = document.getElementById("lockScreen");
 const pinInput = document.getElementById("pinInput");
 const pinBtn = document.getElementById("pinBtn");
 const pinError = document.getElementById("pinError");
 
+let currentUser = "other"; // varsayılan
+
 pinBtn.addEventListener("click", () => {
+    if (pinInput.value === "esma5685") {
+        currentUser = "left"; // soldaki kullanıcı
+        lockScreen.style.display = "none";
+    } else if (pinInput.value === "mirhan5685") {
+        currentUser = "right"; // sağdaki kullanıcı
+        lockScreen.style.display = "none";
+    } else {
+        pinError.textContent = "Yanlış şifre!";
+    }
+});("click", () => {
     if (pinInput.value === "esma5685") {
         lockScreen.style.display = "none";
     } else {
