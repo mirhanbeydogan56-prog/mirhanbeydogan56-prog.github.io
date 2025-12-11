@@ -108,6 +108,10 @@
       else { angle = angle % 360; spinning=false;
         const badge = document.getElementById('resultBadge');
         if(badge){ badge.textContent = `Üstte: ${finalSide}`; badge.style.transform = 'translateX(-50%) scale(1.05)'; setTimeout(()=>{ if(badge) badge.style.transform='translateX(-50%)'; },200); }
+
+        // Çark sonucu chat'e de yazılıyor
+        const resultMessage = `Çark sonucu: ${finalSide}`;
+        appendMessage({ text: resultMessage, sender: 'system' });
       }
     }
     requestAnimationFrame(animate);
@@ -207,7 +211,6 @@
     messagesEl.appendChild(el);
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
-
   </script>
 </body>
 </html>
