@@ -1,118 +1,144 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebRTC Görüntülü Sohbet</title>
+    <title>WebRTC Video Chat</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
         video {
-            width: 45%;
-            border: 2px solid #333;
+            border: 2px solid black;
             margin: 10px;
+            max-width: 100%;
+        }
+
+        #localVideo {
+            width: 45%;
+        }
+
+        #remoteVideo {
+            width: 45%;
+        }
+
+        #startButton, #callButton {
+            padding: 10px 20px;
+            margin-top: 20px;
+            font-size: 16px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <h1>WebRTC Görüntülü Sohbet (Pusher ile)</h1>
 
-    <video id="localVideo" autoplay muted></video>
-    <video id="remoteVideo" autoplay></video>
+<h1>WebRTC Video Chat</h1>
 
-    <button id="startButton">Kamera Başlat</button>
-    <button id="callButton" disabled>Arama Başlat</button>
+<!-- Local and Remote Video Elements -->
+<video id="localVideo" autoplay muted></video>
+<video id="remoteVideo" autoplay></video>
 
-    <!-- Pusher SDK -->
-    <script src="https://js.pusher.com/7.0.3/pusher.min.js"></script>
-    <script>
-        // Pusher ayarları
-        const pusher = new Pusher('03a4356cfe7da7f2209', {
-            cluster: 'eu',
-            encrypted: true
-        });
+<!-- Buttons for starting call -->
+<button id="startButton" onclick="start()">
+    Start Video Call
+</button>
+<button id="callButton" onclick="startCall()" disabled>
+    Start Call
+</button>
 
-        const channel = pusher.subscribe('webrtc-channel'); // 'webrtc-channel' adında bir kanal oluşturacağız.
+<script>
+    let localStream;
+    let remoteStream;
+    let peerConnection;
+    const localVideo = document.getElementById('localVideo');
+    const remoteVideo = document.getElementById('remoteVideo');
 
-        // Video öğeleri
-        const localVideo = document.getElementById('localVideo');
-        const remoteVideo = document.getElementById('remoteVideo');
-        const startButton = document.getElementById('startButton');
-        const callButton = document.getElementById('callButton');
-        
-        let localStream;
-        let peerConnection;
-        const servers = {
-            iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' } // Google STUN sunucu örneği
-            ]
+    const configuration = {
+        iceServers: [
+            {
+                urls: 'stun:stun.l.google.com:19302' // Google's public STUN server
+            }
+        ]
+    };
+
+    // Start the local video stream
+    function start() {
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+            .then(stream => {
+                localStream = stream;
+                localVideo.srcObject = stream;
+
+                // Enable call button when the user media is successfully obtained
+                document.getElementById('callButton').disabled = false;
+            })
+            .catch(error => {
+                console.error('Error accessing media devices.', error);
+            });
+    }
+
+    // Create a new peer connection and send an offer to the remote peer
+    function startCall() {
+        peerConnection = new RTCPeerConnection(configuration);
+
+        // Add local stream to the peer connection
+        localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+        // Set up the remote video stream on receiving tracks
+        peerConnection.ontrack = (event) => {
+            remoteStream = event.streams[0];
+            remoteVideo.srcObject = remoteStream;
         };
 
-        // Kamera başlatma
-        startButton.onclick = async () => {
-            try {
-                localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                localVideo.srcObject = localStream;
-                callButton.disabled = false;
-            } catch (err) {
-                console.error("Kamera başlatılamadı:", err);
+        // Set up ICE candidate handling
+        peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+                // Send the ICE candidate to the remote peer via signaling server (this step is simplified)
+                console.log('Sending ICE candidate', event.candidate);
+                // You would typically send the candidate to the remote peer here
             }
         };
 
-        // Arama başlatma
-        callButton.onclick = async () => {
-            peerConnection = new RTCPeerConnection(servers);
-            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+        // Create an offer and set it as the local description
+        peerConnection.createOffer()
+            .then(offer => {
+                return peerConnection.setLocalDescription(offer);
+            })
+            .then(() => {
+                console.log('Offer sent to remote peer');
+                // Send offer to remote peer here using signaling server
+            })
+            .catch(error => {
+                console.error('Error creating or setting offer:', error);
+            });
+    }
 
-            // Remote video akışını yerleştirme
-            peerConnection.ontrack = (event) => {
-                remoteVideo.srcObject = event.streams[0];
-            };
+    // Function to handle the remote peer's answer and establish the connection
+    function handleAnswer(answer) {
+        peerConnection.setRemoteDescription(new RTCSessionDescription(answer))
+            .then(() => {
+                console.log('Answer received and set as remote description');
+            })
+            .catch(error => {
+                console.error('Error setting remote description:', error);
+            });
+    }
 
-            peerConnection.onicecandidate = (event) => {
-                if (event.candidate) {
-                    channel.trigger('client-ice-candidate', { candidate: event.candidate });
-                }
-            };
+    // Function to handle the remote peer's ICE candidates
+    function handleRemoteIceCandidate(candidate) {
+        peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
+            .catch(error => {
+                console.error('Error adding ICE candidate:', error);
+            });
+    }
+</script>
 
-            // Teklif oluşturma
-            const offer = await peerConnection.createOffer();
-            await peerConnection.setLocalDescription(offer);
-            channel.trigger('client-offer', { offer: offer });
-        };
-
-        // Teklif alındığında
-        channel.bind('client-offer', async (data) => {
-            const offer = data.offer;
-            peerConnection = new RTCPeerConnection(servers);
-            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-
-            peerConnection.ontrack = (event) => {
-                remoteVideo.srcObject = event.streams[0];
-            };
-
-            peerConnection.onicecandidate = (event) => {
-                if (event.candidate) {
-                    channel.trigger('client-ice-candidate', { candidate: event.candidate });
-                }
-            };
-
-            await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
-
-            const answer = await peerConnection.createAnswer();
-            await peerConnection.setLocalDescription(answer);
-            channel.trigger('client-answer', { answer: answer });
-        });
-
-        // Cevap alındığında
-        channel.bind('client-answer', (data) => {
-            const answer = data.answer;
-            peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
-        });
-
-        // ICE candidate alındığında
-        channel.bind('client-ice-candidate', (data) => {
-            const candidate = data.candidate;
-            peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-        });
-    </script>
 </body>
 </html>
