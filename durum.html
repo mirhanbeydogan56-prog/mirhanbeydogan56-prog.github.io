@@ -1,1 +1,255 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Futbol Tahmin Oyunu — Sahte Para</title>
+  <style>
+    :root{--bg:#0f172a;--card:#0b1220;--accent:#06b6d4;--muted:#94a3b8;--glass:rgba(255,255,255,0.03)}
+    body{font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,#071029 0%, #07172a 100%);color:#e6eef6;margin:0;padding:24px}
+    .wrap{max-width:980px;margin:0 auto}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    h1{font-size:20px;margin:0}
+    .wallet{background:var(--card);padding:12px;border-radius:12px;display:flex;gap:12px;align-items:center}
+    .balance{font-weight:700;font-size:18px}
+    .muted{color:var(--muted);font-size:13px}
+    .controls{display:flex;gap:8px}
+    button{background:var(--accent);border:0;padding:8px 12px;border-radius:8px;color:#042024;cursor:pointer}
+    input[type=number], input[type=text]{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:inherit}
+    .grid{display:grid;grid-template-columns:1fr 340px;gap:16px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:12px;border-radius:12px}
+    .match{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:10px;margin-bottom:8px;background:rgba(255,255,255,0.01)}
+    .teams{display:flex;align-items:center;gap:12px}
+    .btn-small{padding:6px 8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);cursor:pointer}
+    .bets{max-height:420px;overflow:auto}
+    .status-won{color:#a7f3d0}
+    .status-lost{color:#fecaca}
+    footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px}
+    a{color:var(--accent)}
+    @media(max-width:900px){.grid{grid-template-columns:1fr} .controls{flex-direction:column;align-items:flex-end}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Futbol Tahmin Oyunu (Sahte Para)</h1>
+      <div class="wallet card">
+        <div>
+          <div class="muted">Bakiye</div>
+          <div class="balance" id="balance">0 ₺</div>
+        </div>
+        <div style="margin-left:12px" class="controls">
+          <input id="depositAmt" type="number" min="1" placeholder="Miktar" />
+          <button id="depositBtn">Para Yükle (sahte)</button>
+          <button id="resetBtn" title="LocalStorage sıfırla">Sıfırla</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <strong>Yaklaşan Maçlar — Swiss Super League (2024-2025)</strong>
+          <div>
+            <button id="refreshBtn" class="btn-small">Yenile</button>
+            <button id="checkResultsBtn" class="btn-small">Sonuçları Kontrol Et</button>
+          </div>
+        </div>
+        <div id="matches" aria-live="polite">Maçlar yükleniyor...</div>
+        <p class="muted">Not: Veriler TheSportsDB'den çekilir (eventsnextleague endpoint). Eğer API erişimi sağlanamazsa demo veriye dönülür.</p>
+      </section>
+
+      <aside class="card">
+        <strong>Aktif Bahisler</strong>
+        <div class="bets" id="betsList" style="margin-top:8px">Henüz bahis yok.</div>
+        <hr style="margin:12px 0;border:none;border-top:1px solid rgba(255,255,255,0.03)" />
+        <strong>Geçmiş Bahisler</strong>
+        <div id="history" style="margin-top:8px;max-height:200px;overflow:auto">Henüz yok.</div>
+      </aside>
+    </div>
+
+    <footer>
+      <div>Bu site sadece oyun amaçlıdır. Hiçbir gerçek para ya da bahis aracı değildir.</div>
+      <div style="margin-top:6px">Sayfa çalışmıyorsa <a href="#" id="showDebug">hata günlüğünü göster</a>.</div>
+      <pre id="debug" style="display:none;background:#021524;padding:10px;border-radius:8px;color:#87eaf2;overflow:auto;max-height:200px"></pre>
+    </footer>
+  </div>
+
+<script>
+// Robust helper: try direct fetch, then several proxies; detect HTML and return JSON only when safe
+async function fetchJson(apiURL){
+  const proxies = [
+    url=>url, // try direct first
+    url=> 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+    url=> 'https://corsproxy.io/?' + encodeURIComponent(url),
+    url=> 'https://cors.bridged.cc/' + url
+  ];
+
+  for(const make of proxies){
+    const attemptURL = make(apiURL);
+    try{
+      const res = await fetch(attemptURL, {cache: 'no-store'});
+      const contentType = (res.headers.get('content-type') || '').toLowerCase();
+      const txt = await res.text();
+
+      dbg('fetchJson try ' + attemptURL + ' — status: ' + res.status + ' content-type: ' + contentType);
+
+      if(contentType.includes('application/json') || txt.trim().startsWith('{') || txt.trim().startsWith('[')){
+        try{ return JSON.parse(txt); } catch(e){ dbg('parse hata: '+e); continue; }
+      }
+
+      if(txt.trim().startsWith('<')){
+        dbg('HTML döndü (proxy: ' + attemptURL + '). İlk 300 karakter: ' + txt.slice(0,300));
+        continue;
+      }
+
+      try{ return JSON.parse(txt); }catch(e){ dbg('parse ikinci deneme hata: '+e); continue; }
+
+    }catch(err){ dbg('fetch deneme hata: '+err + ' (proxy: ' + attemptURL + ')'); continue; }
+  }
+  throw new Error('Tüm proxy denemeleri başarısız — HTML veya hata döndü');
+}
+
+const API_BASE = 'https://www.thesportsdb.com/api/v1/json/1/eventsnextleague.php?id=4688';
+const storageKey = 'ft_wallet_v1';
+const betsKey = 'ft_bets_v1';
+
+function dbg(msg){
+  try{
+    const el = document.getElementById('debug');
+    el.style.display = 'block';
+    el.textContent = el.textContent + String(msg) + '\n';
+  }catch(e){console.error('dbg hata',e)}
+}
+
+function loadState(){ try{ return JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch(e){ return {balance:0}; } }
+function saveState(s){ localStorage.setItem(storageKey, JSON.stringify(s)); }
+function loadBets(){ try{ return JSON.parse(localStorage.getItem(betsKey) || '[]'); }catch(e){return []} }
+function saveBets(b){ localStorage.setItem(betsKey, JSON.stringify(b)); }
+function formatCurrency(n){ return Number(n).toLocaleString('tr-TR') + ' ₺'; }
+function renderBalance(){ const s = loadState(); document.getElementById('balance').textContent = formatCurrency(s.balance || 0); }
+
+function deposit(amount){ const s = loadState(); s.balance = (Number(s.balance) || 0) + Number(amount); saveState(s); renderBalance(); }
+function resetAll(){ if(!confirm('LocalStorage sıfırlansın mı?')) return; localStorage.removeItem(storageKey); localStorage.removeItem(betsKey); renderBalance(); renderBets(); document.getElementById('matches').innerHTML = ''; }
+
+function demoMatches(){
+  return [
+    {idEvent:'demo1', strEvent:'Basel vs Young Boys', strHomeTeam:'Basel', strAwayTeam:'Young Boys', dateEvent:new Date().toISOString().slice(0,10), strTime:'20:00:00'},
+    {idEvent:'demo2', strEvent:'Zürich vs St. Gallen', strHomeTeam:'Zürich', strAwayTeam:'St. Gallen', dateEvent:new Date().toISOString().slice(0,10), strTime:'22:00:00', intHomeScore:1, intAwayScore:0}
+  ];
+}
+
+async function fetchMatchesForToday(){
+  const apiURL = API_BASE;
+  try{
+    const data = await fetchJson(apiURL);
+    if(data && data.events && data.events.length) renderMatches(data.events);
+    else { dbg('API: Yaklaşan maç bulunamadı. Demo gösteriliyor.'); renderMatches(demoMatches()); }
+  }catch(e){ dbg('fetchMatchesForToday hata: ' + e); renderMatches(demoMatches()); }
+}
+
+function renderMatches(events){
+  const wrap = document.getElementById('matches');
+  if(!events || events.length === 0){ wrap.innerHTML = '<div class="muted">Bugün maç bulunamadı.</div>'; return; }
+  wrap.innerHTML = '';
+  events.forEach(ev => {
+    const m = document.createElement('div'); m.className = 'match';
+
+    const left = document.createElement('div'); left.innerHTML = '<div style="font-weight:700">' + (ev.strHomeTeam||ev.homeTeam||'Home') + '</div><div class="muted" style="font-size:12px">' + (ev.dateEvent||'') + ' ' + (ev.strTime||ev.time||'') + '</div>';
+    const vs = document.createElement('div'); vs.innerHTML = '<div style="text-align:center;font-weight:700">vs</div>';
+    const right = document.createElement('div'); right.innerHTML = '<div style="font-weight:700;text-align:right">' + (ev.strAwayTeam||ev.awayTeam||'Away') + '</div>';
+
+    const teams = document.createElement('div'); teams.className = 'teams'; teams.appendChild(left); teams.appendChild(vs); teams.appendChild(right);
+
+    const controls = document.createElement('div');
+    const scoreText = (ev.intHomeScore != null && ev.intAwayScore != null) ? (ev.intHomeScore + ' - ' + ev.intAwayScore) : '<span class="muted">Henüz</span>';
+    const scoreEl = document.createElement('div'); scoreEl.innerHTML = '<div style="font-size:13px;margin-bottom:6px">Sonuç: ' + scoreText + '</div>';
+    controls.appendChild(scoreEl);
+
+    const betBtn = document.createElement('button'); betBtn.className = 'btn-small'; betBtn.textContent = 'Tahmin Yap';
+    betBtn.addEventListener('click', () => openBetModal(ev));
+    controls.appendChild(betBtn);
+
+    m.appendChild(teams);
+    m.appendChild(controls);
+    wrap.appendChild(m);
+  });
+}
+
+function openBetModal(match){
+  const promptText = (match.strHomeTeam || match.homeTeam || 'Home') + ' - ' + (match.strAwayTeam || match.awayTeam || 'Away') + '\nTahmin (Home/Draw/Away),Tutar örn: Home,50';
+  const amt = prompt(promptText);
+  if(!amt) return;
+  const parts = amt.split(',').map(s=>s.trim());
+  if(parts.length !== 2) return alert('Format: Home,50');
+  const choice = parts[0]; const amount = Number(parts[1]);
+  if(!['Home','Draw','Away'].includes(choice)) return alert('Home/Draw/Away girin');
+  if(!amount || amount <= 0) return alert('Geçerli miktar girin');
+  const s = loadState(); if((s.balance || 0) < amount) return alert('Yetersiz bakiye');
+  s.balance = (Number(s.balance)||0) - amount; saveState(s); renderBalance();
+  const bets = loadBets();
+  bets.push({ id: match.idEvent || (match.fixture && match.fixture.id) || ('rnd'+Date.now()), home: match.strHomeTeam||match.homeTeam, away: match.strAwayTeam||match.awayTeam, date: match.dateEvent||'', time: match.strTime||match.time||'', choice, amount, settled:false, result:null });
+  saveBets(bets); renderBets();
+}
+
+function renderBets(){
+  const list = loadBets();
+  const el = document.getElementById('betsList');
+  const hist = document.getElementById('history');
+  if(!list || list.length === 0){ el.innerHTML = 'Henüz bahis yok.'; hist.innerHTML = 'Henüz yok.'; return; }
+  const active = list.filter(b=>!b.settled);
+  const past = list.filter(b=>b.settled);
+  el.innerHTML = '';
+  active.forEach(b=>{
+    const node = document.createElement('div'); node.style.padding = '8px'; node.style.borderBottom = '1px solid rgba(255,255,255,0.02)';
+    node.innerHTML = '<div style="font-weight:700">' + b.home + ' — ' + b.away + '</div><div class="muted">Tahmin: ' + b.choice + ' • ' + formatCurrency(b.amount) + '</div>';
+    el.appendChild(node);
+  });
+  hist.innerHTML = '';
+  past.forEach(b=>{
+    const p = document.createElement('div'); p.style.padding = '8px'; p.style.borderBottom = '1px solid rgba(255,255,255,0.02)';
+    const cls = b.result === 'win' ? 'status-won' : 'status-lost';
+    p.innerHTML = '<div style="font-weight:700">' + b.home + ' — ' + b.away + '</div><div class="muted">Sonuç: <span class="' + cls + '">' + (b.result||'') + '</span></div>';
+    hist.appendChild(p);
+  });
+}
+
+async function checkResults(){
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  const apiURL = API_BASE + '?d=' + yyyy + '-' + mm + '-' + dd + '&s=' + encodeURIComponent('Soccer');
+  let events = [];
+  try{ const data = await fetchJson(apiURL); events = data.events || demoMatches(); }
+  catch(e){ dbg('checkResults hata: ' + e); events = demoMatches(); }
+  let bets = loadBets(); let changed = false;
+  bets = bets.map(b=>{
+    const ev = (events || []).find(e => e.idEvent == b.id);
+    if(!ev) return b;
+    if(ev.intHomeScore != null && ev.intAwayScore != null && !b.settled){
+      const h = Number(ev.intHomeScore), a = Number(ev.intAwayScore);
+      let out = 'Draw'; if(h > a) out = 'Home'; else if(a > h) out = 'Away';
+      if(out === b.choice){ b.result = 'win'; b.settled = true; const s = loadState(); s.balance = (Number(s.balance)||0) + b.amount * 2; saveState(s); renderBalance(); }
+      else { b.result = 'lose'; b.settled = true; }
+      changed = true;
+    }
+    return b;
+  });
+  if(changed){ saveBets(bets); renderBets(); alert('Bahisler güncellendi'); }
+  else alert('Yeni sonuç yok.');
+}
+
+// INIT
+renderBalance(); renderBets(); fetchMatchesForToday();
+
+// events
+document.getElementById('depositBtn').onclick = () => { const v = Number(document.getElementById('depositAmt').value); if(!v || v <= 0) return alert('Geçerli miktar girin'); deposit(v); document.getElementById('depositAmt').value = ''; };
+document.getElementById('resetBtn').onclick = resetAll;
+document.getElementById('refreshBtn').onclick = fetchMatchesForToday;
+document.getElementById('checkResultsBtn').onclick = checkResults;
+document.getElementById('showDebug').onclick = (e) => { e.preventDefault(); const d = document.getElementById('debug'); d.style.display = d.style.display === 'block' ? 'none' : 'block'; };
+</script>
+</body>
+</html>
 
