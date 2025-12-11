@@ -29,6 +29,9 @@
     .info{font-size:13px;color:#97a6bf}
     footer{margin-top:8px;font-size:13px;color:#8ea1bf}
 
+    /* chat */
+    #messages .msg{padding:6px 8px;margin-bottom:6px;border-radius:8px;background:rgba(255,255,255,0.02);max-width:85%}
+
     /* responsive */
     @media (max-width:780px){.wrap{grid-template-columns:1fr;gap:12px}}
   </style>
@@ -46,7 +49,6 @@
 
             <!-- Wheel -->
             <g id="wheel-group">
-              
               <g id="rot">
                 <!-- SOL YARI (D) -->
                 <path d="M0,0 L0,-150 A150,150 0 0,0 0,150 Z" fill="#ffd166" />
@@ -60,7 +62,9 @@
               <circle cx="0" cy="0" r="25" fill="#071022" />
             </g>
           </svg>
-        </div></div></div>
+        </div>
+      </div>
+    </div>
 
 <aside class="card controls">
   <h3>DC Çarkı Kontrolleri</h3>
@@ -126,11 +130,11 @@ startBtn.addEventListener('click', ()=>{
 });
 </script>
 
-<!-- Firebase chat scripts -->
+<!-- Firebase (compat) -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <script>
-// Basit parola kontrollü sohbet (ÖNEMLİ: bu frontend parola güvenli değildir, sadece demo amaçlı.)
+// NOTE: frontend password is NOT secure. This is a simple demo.
 const SITE_PASSWORD = 'esma5685';
 const passInput = document.getElementById('passInput');
 const passBtn = document.getElementById('passBtn');
@@ -152,7 +156,8 @@ passBtn.addEventListener('click', ()=>{
   }
 });
 
-// FIREBASE: lütfen kendi projende aşağıdaki config'i değiştir
+// Use the Realtime Database (since earlier Firestore init caused an error for you).
+// Your provided firebaseConfig (kept from earlier message)
 const firebaseConfig = {
   apiKey: "AIzaSyBsHcKaTIifxx8VhcJIkzVgp0Ywgej7NCA",
   authDomain: "dcchat-7fa9a.firebaseapp.com",
@@ -167,33 +172,44 @@ const firebaseConfig = {
 function initChat(){
   if(window._chatInited) return;
   window._chatInited = true;
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+  try{
+    firebase.initializeApp(firebaseConfig);
+  }catch(e){
+    console.error('Firebase init error', e);
+    return;
+  }
 
-  // listen messages ordered by timestamp
-  db.collection('messages').orderBy('ts').onSnapshot(snap=>{
-    messagesEl.innerHTML = '';
-    snap.forEach(doc=>{
-      const d = doc.data();
-      const el = document.createElement('div');
-      el.style.padding='6px 8px';
-      el.style.marginBottom='6px';
-      el.style.borderRadius='8px';
-      el.style.background='rgba(255,255,255,0.02)';
-      el.style.color='inherit';
-      el.textContent = `${d.text}`;
-      messagesEl.appendChild(el);
-    });
-    messagesEl.scrollTop = messagesEl.scrollHeight;
+  const db = firebase.database();
+  const msgsRef = db.ref('messages');
+
+  // listen for new messages (child_added keeps message order as pushed)
+  msgsRef.limitToLast(100).on('child_added', snap => {
+    const d = snap.val();
+    if(!d) return;
+    appendMessage(d.text || '');
   });
 
+  // submit message
   msgForm.addEventListener('submit', async (e)=>{
     e.preventDefault();
     const txt = msgInput.value.trim();
     if(!txt) return;
-    await db.collection('messages').add({ text: txt, ts: firebase.firestore.FieldValue.serverTimestamp() });
-    msgInput.value = '';
+    try{
+      await msgsRef.push({ text: txt, ts: Date.now() });
+      msgInput.value = '';
+    }catch(err){
+      console.error('DB write error', err);
+      alert('Mesaj gönderilemedi. Konsolu kontrol edin.');
+    }
   });
+}
+
+function appendMessage(text){
+  const el = document.createElement('div');
+  el.className = 'msg';
+  el.textContent = text;
+  messagesEl.appendChild(el);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 </script>
 </body>
