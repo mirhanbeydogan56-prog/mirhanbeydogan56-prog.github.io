@@ -207,54 +207,7 @@
     messagesEl.appendChild(el);
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
-    <script>
-  // --- Real-time spin sync ---
-  const spinRef = firebase.database().ref('spin');
 
-  // dinle – başka biri spin başlatırsa
-  spinRef.on('value', snap => {
-    const spin = snap.val();
-    if(!spin) return;
-    if(spin.triggerId === window._lastSpinId) return; // kendi gönderdiğimiz spin ise tekrar oynatma
-    runSpin(spin.finalSide, spin.randomExtra);
-  });
-
-  // startBtn artık direkt döndürmeyecek → Firebase'e spin komutu gönderecek
-  startBtn.addEventListener('click', ()=>{
-    if(spinning) return;
-    const finalSide = Math.random() < 0.5 ? 'D' : 'C';
-    const randomExtra = Math.random()*60;
-    window._lastSpinId = Date.now();
-    spinRef.set({ finalSide, randomExtra, ts: Date.now(), triggerId: window._lastSpinId });
-  });
-
-  // ortak spin çalıştırma fonksiyonu
-  function runSpin(finalSide, randomExtra){
-    if(spinning) return;
-    spinning = true;
-    let targetAngle = finalSide === 'D' ? 0 : 180;
-    targetAngle += 360*5 + randomExtra;
-    const start = angle;
-    const diff = (targetAngle - start);
-    const duration = 3000;
-    const startTime = performance.now();
-
-    function animate(t){
-      const p = Math.min((t-startTime)/duration,1);
-      const ease = 1 - Math.pow(1-p,3);
-      angle = start + diff * ease;
-      rot.setAttribute('transform',`rotate(${angle})`);
-      if(p<1) requestAnimationFrame(animate);
-      else {
-        angle = angle % 360;
-        spinning=false;
-        const badge = document.getElementById('resultBadge');
-        if(badge){ badge.textContent = `Üstte: ${finalSide}`; }
-      }
-    }
-
-    requestAnimationFrame(animate);
-  }
   </script>
 </body>
 </html>
