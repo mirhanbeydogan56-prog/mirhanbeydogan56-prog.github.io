@@ -58,6 +58,7 @@
     let localStream;
     let remoteStream;
     let peerConnection;
+    let socket;
     const localVideo = document.getElementById('localVideo');
     const remoteVideo = document.getElementById('remoteVideo');
 
@@ -69,14 +70,32 @@
         ]
     };
 
-    // Start the local video stream
+    // WebSocket bağlantısı kur
+    socket = new WebSocket('ws://localhost:8080');
+
+    socket.onopen = () => {
+        console.log('WebSocket bağlantısı kuruldu!');
+    };
+
+    socket.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        console.log('Mesaj alındı:', message);
+
+        if (message.offer) {
+            handleOffer(message.offer);
+        } else if (message.answer) {
+            handleAnswer(message.answer);
+        } else if (message.iceCandidate) {
+            handleIceCandidate(message.iceCandidate);
+        }
+    };
+
+    // Kamera erişimini al
     function start() {
         navigator.mediaDevices.getUserMedia({ video: true, audio: true })
             .then(stream => {
                 localStream = stream;
                 localVideo.srcObject = stream;
-
-                // Enable call button when the user media is successfully obtained
                 document.getElementById('callButton').disabled = false;
             })
             .catch(error => {
@@ -84,55 +103,56 @@
             });
     }
 
-    // Create a new peer connection and send an offer to the remote peer
+    // WebRTC bağlantısı başlat
     function startCall() {
         peerConnection = new RTCPeerConnection(configuration);
 
-        // Add local stream to the peer connection
-        localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+        localStream.getTracks().forEach(track => {
+            peerConnection.addTrack(track, localStream);
+        });
 
-        // Set up the remote video stream on receiving tracks
         peerConnection.ontrack = (event) => {
             remoteStream = event.streams[0];
             remoteVideo.srcObject = remoteStream;
         };
 
-        // Set up ICE candidate handling
         peerConnection.onicecandidate = (event) => {
             if (event.candidate) {
-                // Send the ICE candidate to the remote peer via signaling server (this step is simplified)
-                console.log('Sending ICE candidate', event.candidate);
-                // You would typically send the candidate to the remote peer here
+                socket.send(JSON.stringify({ iceCandidate: event.candidate }));
             }
         };
 
-        // Create an offer and set it as the local description
         peerConnection.createOffer()
             .then(offer => {
                 return peerConnection.setLocalDescription(offer);
             })
             .then(() => {
-                console.log('Offer sent to remote peer');
-                // Send offer to remote peer here using signaling server
+                socket.send(JSON.stringify({ offer: peerConnection.localDescription }));
             })
             .catch(error => {
                 console.error('Error creating or setting offer:', error);
             });
     }
 
-    // Function to handle the remote peer's answer and establish the connection
-    function handleAnswer(answer) {
-        peerConnection.setRemoteDescription(new RTCSessionDescription(answer))
+    // Offer mesajını al ve yanıtla
+    function handleOffer(offer) {
+        peerConnection = new RTCPeerConnection(configuration);
+        peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+
+        peerConnection.createAnswer()
+            .then(answer => {
+                return peerConnection.setLocalDescription(answer);
+            })
             .then(() => {
-                console.log('Answer received and set as remote description');
+                socket.send(JSON.stringify({ answer: peerConnection.localDescription }));
             })
             .catch(error => {
-                console.error('Error setting remote description:', error);
+                console.error('Error creating or setting answer:', error);
             });
     }
 
-    // Function to handle the remote peer's ICE candidates
-    function handleRemoteIceCandidate(candidate) {
+    // ICE Adayını al ve ekle
+    function handleIceCandidate(candidate) {
         peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
             .catch(error => {
                 console.error('Error adding ICE candidate:', error);
