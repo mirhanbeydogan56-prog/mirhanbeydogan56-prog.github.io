@@ -1,5 +1,5 @@
 const WebSocket = require('ws');
-const wss = new WebSocket.Server({ port: 8080 }); // WebSocket sunucusu, port 8080'de çalışacak
+const wss = new WebSocket.Server({ port: 3000 }); // WebSocket sunucusu, port 3000'de çalışacak
 
 // WebSocket bağlantısı kurulduğunda
 wss.on('connection', (ws) => {
@@ -23,4 +23,4 @@ wss.on('connection', (ws) => {
     });
 });
 
-console.log('WebSocket sunucusu çalışıyor...');
+console.log('WebSocket sunucusu 3000 portunda çalışıyor...');
