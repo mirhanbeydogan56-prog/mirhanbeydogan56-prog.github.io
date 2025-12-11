@@ -135,17 +135,23 @@ startBtn.addEventListener('click', ()=>{
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <script>
 // NOTE: frontend password is NOT secure. This is a simple demo.
-const SITE_PASSWORD = 'esma5685';
-const passInput = document.getElementById('passInput');
-const passBtn = document.getElementById('passBtn');
-const passErr = document.getElementById('passErr');
-const loginBox = document.getElementById('loginBox');
-const chatUI = document.getElementById('chatUI');
-const messagesEl = document.getElementById('messages');
-const msgForm = document.getElementById('msgForm');
-const msgInput = document.getElementById('msgInput');
+const PASS_ESMA = 'esma5685';
+const PASS_MIRHAN = 'mirhan5685';
+let currentUser = null;
 
 passBtn.addEventListener('click', ()=>{
+  const v = passInput.value || '';
+  if(v === PASS_ESMA){ currentUser = 'esma'; }
+  else if(v === PASS_MIRHAN){ currentUser = 'mirhan'; }
+
+  if(currentUser){
+    loginBox.style.display='none';
+    chatUI.style.display='flex';
+    initChat();
+  } else {
+    passErr.style.display='block';
+  }
+});('click', ()=>{
   const v = passInput.value || '';
   if(v === SITE_PASSWORD){
     loginBox.style.display='none';
@@ -172,12 +178,9 @@ const firebaseConfig = {
 function initChat(){
   if(window._chatInited) return;
   window._chatInited = true;
-  try{
+  if (firebase.apps().length === 0) {
     firebase.initializeApp(firebaseConfig);
-  }catch(e){
-    console.error('Firebase init error', e);
-    return;
-  }
+}
 
   const db = firebase.database();
   const msgsRef = db.ref('messages');
@@ -195,7 +198,7 @@ function initChat(){
     const txt = msgInput.value.trim();
     if(!txt) return;
     try{
-      await msgsRef.push({ text: txt, ts: Date.now() });
+      await msgsRef.push({ text: txt, ts: Date.now(), sender: currentUser });
       msgInput.value = '';
     }catch(err){
       console.error('DB write error', err);
@@ -204,10 +207,18 @@ function initChat(){
   });
 }
 
-function appendMessage(text){
+function appendMessage(d){
   const el = document.createElement('div');
   el.className = 'msg';
-  el.textContent = text;
+  el.textContent = d.text;
+  el.style.maxWidth = '70%';
+  if(currentUser === d.sender){
+    el.style.marginLeft = 'auto';
+    el.style.background = 'rgba(0,255,0,0.08)';
+  } else {
+    el.style.marginRight = 'auto';
+    el.style.background = 'rgba(255,255,255,0.05)';
+  }
   messagesEl.appendChild(el);
   messagesEl.scrollTop = messagesEl.scrollHeight;
 }
