@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Görüntülü Sohbet</title>
+    <style>
+        video {
+            width: 45%;
+            border: 2px solid #333;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>WebRTC Görüntülü Sohbet (Pusher ile)</h1>
+
+    <video id="localVideo" autoplay muted></video>
+    <video id="remoteVideo" autoplay></video>
+
+    <button id="startButton">Kamera Başlat</button>
+    <button id="callButton" disabled>Arama Başlat</button>
+
+    <!-- Pusher SDK -->
+    <script src="https://js.pusher.com/7.0.3/pusher.min.js"></script>
+    <script>
+        // Pusher ayarları
+        const pusher = new Pusher('03a4356cfe7da7f2209', {
+            cluster: 'eu',
+            encrypted: true
+        });
+
+        const channel = pusher.subscribe('webrtc-channel'); // 'webrtc-channel' adında bir kanal oluşturacağız.
+
+        // Video öğeleri
+        const localVideo = document.getElementById('localVideo');
+        const remoteVideo = document.getElementById('remoteVideo');
+        const startButton = document.getElementById('startButton');
+        const callButton = document.getElementById('callButton');
+        
+        let localStream;
+        let peerConnection;
+        const servers = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' } // Google STUN sunucu örneği
+            ]
+        };
+
+        // Kamera başlatma
+        startButton.onclick = async () => {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                localVideo.srcObject = localStream;
+                callButton.disabled = false;
+            } catch (err) {
+                console.error("Kamera başlatılamadı:", err);
+            }
+        };
+
+        // Arama başlatma
+        callButton.onclick = async () => {
+            peerConnection = new RTCPeerConnection(servers);
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+            // Remote video akışını yerleştirme
+            peerConnection.ontrack = (event) => {
+                remoteVideo.srcObject = event.streams[0];
+            };
+
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    channel.trigger('client-ice-candidate', { candidate: event.candidate });
+                }
+            };
+
+            // Teklif oluşturma
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            channel.trigger('client-offer', { offer: offer });
+        };
+
+        // Teklif alındığında
+        channel.bind('client-offer', async (data) => {
+            const offer = data.offer;
+            peerConnection = new RTCPeerConnection(servers);
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+            peerConnection.ontrack = (event) => {
+                remoteVideo.srcObject = event.streams[0];
+            };
+
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    channel.trigger('client-ice-candidate', { candidate: event.candidate });
+                }
+            };
+
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            channel.trigger('client-answer', { answer: answer });
+        });
+
+        // Cevap alındığında
+        channel.bind('client-answer', (data) => {
+            const answer = data.answer;
+            peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+        });
+
+        // ICE candidate alındığında
+        channel.bind('client-ice-candidate', (data) => {
+            const candidate = data.candidate;
+            peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+        });
+    </script>
+</body>
+</html>
