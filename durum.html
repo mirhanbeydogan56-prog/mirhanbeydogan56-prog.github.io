@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Günlük Durum — Enerji Yüzdem</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#ff6b6b;--muted:#9aa4b2;--glass:rgba(255,255,255,0.04)}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#071027 0%, #071a2f 100%);color:#e6eef6;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+    .card{width:100%;max-width:520px;background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));border-radius:14px;padding:22px;box-shadow:0 10px 40px rgba(2,6,23,0.6)}
+    h1{margin:0 0 6px;font-size:20px}
+    p.lead{margin:0 0 18px;color:var(--muted)}
+
+    .meter{display:flex;align-items:center;gap:14px}
+    .big{font-size:44px;font-weight:700;min-width:88px;text-align:center}
+
+    input[type=range]{-webkit-appearance:none;width:100%;height:10px;border-radius:10px;background:linear-gradient(90deg,var(--accent),#ffd6d6);outline:none}
+    input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 3px 8px rgba(0,0,0,0.4);border:4px solid var(--accent)}
+
+    .row{display:flex;gap:8px;margin-top:14px}
+    .btn{flex:1;padding:10px 12px;border-radius:10px;background:var(--glass);border:1px solid rgba(255,255,255,0.03);cursor:pointer;color:inherit;font-weight:600}
+    .btn.primary{background:linear-gradient(90deg,var(--accent),#ff9b9b);color:#081226}
+    .btn.ghost{background:transparent;border:1px dashed rgba(255,255,255,0.04)}
+
+    .presets{display:flex;gap:8px;margin-top:12px}
+    .preset{padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.02);cursor:pointer;border:1px solid rgba(255,255,255,0.03)}
+
+    .meta{margin-top:14px;color:var(--muted);font-size:13px}
+
+    .footer{margin-top:18px;display:flex;gap:8px}
+
+    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:26px;background:#0b1220;padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 6px 20px rgba(2,6,23,0.6);display:none}
+    @media(max-width:520px){.big{font-size:36px;min-width:70px}}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Günlük Durum</h1>
+    <p class="lead">Bugün enerjim kaç? Bir yüzde seç ve kaydet — bu değer sen değiştirmedikçe kayıtlı kalır.</p>
+
+    <div class="meter">
+      <div style="flex:1">
+        <input id="range" type="range" min="0" max="100" value="75" />
+      </div>
+      <div class="big" id="value">75%</div>
+    </div>
+
+    <div class="presets">
+      <button class="preset" data-val="0">0%</button>
+      <button class="preset" data-val="25">25%</button>
+      <button class="preset" data-val="50">50%</button>
+      <button class="preset" data-val="75">75%</button>
+      <button class="preset" data-val="100">100%</button>
+    </div>
+
+    <div class="row">
+      <button class="btn primary" id="save">Kaydet</button>
+      <button class="btn" id="clear">Temizle</button>
+    </div>
+
+    <div class="meta" id="meta">Henüz kayıt yok.</div>
+
+    <div class="footer">
+      <button class="btn ghost" id="export">Dışa aktar</button>
+      <button class="btn ghost" id="import">İçe aktar</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Kaydedildi</div>
+
+  <script>
+    (function(){
+      const KEY_VAL = 'durum_energy_value';
+      const KEY_DATE = 'durum_energy_date';
+
+      const range = document.getElementById('range');
+      const valueEl = document.getElementById('value');
+      const saveBtn = document.getElementById('save');
+      const clearBtn = document.getElementById('clear');
+      const meta = document.getElementById('meta');
+      const toast = document.getElementById('toast');
+      const presets = document.querySelectorAll('.preset');
+      const exportBtn = document.getElementById('export');
+      const importBtn = document.getElementById('import');
+
+      function showToast(text){
+        toast.textContent = text || 'Kaydedildi';
+        toast.style.display = 'block';
+        setTimeout(()=>{ toast.style.display = 'none'; }, 1500);
+      }
+
+      function formatDateISO(ts){
+        const d = new Date(ts);
+        const opts = { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'};
+        return d.toLocaleString(undefined, opts);
+      }
+
+      function load(){
+        const v = localStorage.getItem(KEY_VAL);
+        const d = localStorage.getItem(KEY_DATE);
+        if(v !== null){
+          range.value = Number(v);
+          valueEl.textContent = v + '%';
+          meta.textContent = 'Son kaydetme: ' + (d ? formatDateISO(Number(d)) : 'bilinmiyor');
+        } else {
+          meta.textContent = 'Henüz kayıt yok.';
+        }
+      }
+
+      function save(){
+        const v = String(range.value);
+        localStorage.setItem(KEY_VAL, v);
+        localStorage.setItem(KEY_DATE, String(Date.now()));
+        meta.textContent = 'Son kaydetme: ' + formatDateISO(Date.now());
+        showToast('Durum kaydedildi');
+      }
+
+      function clearAll(){
+        localStorage.removeItem(KEY_VAL);
+        localStorage.removeItem(KEY_DATE);
+        meta.textContent = 'Henüz kayıt yok.';
+        range.value = 75;
+        valueEl.textContent = '75%';
+        showToast('Kayıt temizlendi');
+      }
+
+      range.addEventListener('input', ()=>{
+        valueEl.textContent = range.value + '%';
+      });
+
+      saveBtn.addEventListener('click', save);
+      clearBtn.addEventListener('click', ()=>{ if(confirm('Kayıt silinsin mi?')) clearAll(); });
+
+      presets.forEach(btn => btn.addEventListener('click', ()=>{ range.value = btn.dataset.val; valueEl.textContent = btn.dataset.val + '%'; }));
+
+      // export / import simple JSON
+      exportBtn.addEventListener('click', ()=>{
+        const v = localStorage.getItem(KEY_VAL);
+        const d = localStorage.getItem(KEY_DATE);
+        const payload = { value: v, date: d };
+        const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'durum.json'; a.click(); URL.revokeObjectURL(url);
+      });
+
+      importBtn.addEventListener('click', ()=>{
+        const input = document.createElement('input'); input.type = 'file'; input.accept = 'application/json';
+        input.onchange = async (e) => {
+          const f = e.target.files[0];
+          if(!f) return;
+          try {
+            const txt = await f.text();
+            const obj = JSON.parse(txt);
+            if(obj && (obj.value !== undefined)){
+              localStorage.setItem(KEY_VAL, String(obj.value));
+              localStorage.setItem(KEY_DATE, String(obj.date || Date.now()));
+              load(); showToast('İçe aktarıldı');
+            } else alert('Geçersiz dosya');
+          } catch(err){ alert('İçe aktarma hatası: ' + err.message); }
+        };
+        input.click();
+      });
+
+      // init
+      load();
+    })();
+  </script>
+</body>
+</html>
