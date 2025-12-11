@@ -36,6 +36,7 @@
             width: 100%;
             border-radius: 5px;
             border: none;
+            box-sizing: border-box;
         }
         #messages {
             flex: 1;
@@ -49,22 +50,25 @@
             height: 80%;
             border: none;
             border-radius: 10px;
+            background: #000;
         }
+        .note { font-size: 13px; color: #cbd5e1; }
     </style>
 </head>
 <body>
     <div id="videoSection">
         <h2>YouTube İzleme</h2>
         <input id="videoInput" placeholder="YouTube Video ID gir (örn: dQw4w9WgXcQ)">
-        <button onclick="changeVideo()">Videoyu Aç</button>
+        <button id="changeBtn">Videoyu Aç</button>
         <iframe id="ytPlayer" src="https://www.youtube.com/embed/" allowfullscreen></iframe>
+        <div class="note">Video ID veya tam YouTube linki (https://youtu.be/ID veya watch?v=ID) yapıştırabilirsiniz.</div>
     </div>
 
     <div id="chatSection">
         <h2>Sohbet</h2>
         <div id="messages"></div>
         <input id="msgInput" placeholder="Mesaj yaz...">
-        <button onclick="sendMessage()">Gönder</button>
+        <button id="sendBtn">Gönder</button>
     </div>
 
     <!-- Firebase -->
@@ -89,37 +93,76 @@
         const videoRef = ref(db, "currentVideo");
         const chatRef = ref(db, "chatMessages");
 
-        // Video izleme senkronizasyonu
-        function changeVideo() {
-            const videoID = document.getElementById("videoInput").value;
-            if(videoID.trim() === "") return;
-            set(videoRef, videoID);
+        // Yardımcı: URL veya ID'den video ID çıkarır
+        function extractVideoId(input) {
+            if(!input) return null;
+            input = input.trim();
+            try {
+                // Eğer tam URL ise
+                if (input.includes('youtu')) {
+                    const u = new URL(input.startsWith('http') ? input : 'https://' + input);
+                    if (u.hostname.includes('youtu.be')) return u.pathname.slice(1).split('?')[0];
+                    return u.searchParams.get('v');
+                }
+            } catch(e) {
+                // not a full url, continue
+            }
+            // Direkt ID olabilir
+            const maybe = input.split('?')[0];
+            if (/^[a-zA-Z0-9_-]{6,}$/.test(maybe)) return maybe;
+            return null;
         }
 
-        onValue(videoRef, (snapshot) => {
-            const videoID = snapshot.val();
-            if(videoID) {
-                document.getElementById("ytPlayer").src = `https://www.youtube.com/embed/${videoID}`;
-            }
-        });
+        // Video izleme senkronizasyonu (talep ile set)
+        function changeVideo() {
+            const videoIDraw = document.getElementById("videoInput").value;
+            const videoID = extractVideoId(videoIDraw);
+            if(!videoID) { alert('Geçerli bir YouTube linki veya ID girin.'); return; }
+            set(videoRef, videoID).catch(err => console.error('set video error', err));
+        }
 
-        // Sohbet sistemi
+        // Chat gönder
         function sendMessage() {
-            const msg = document.getElementById("msgInput").value;
-            if(msg.trim() === "") return;
-            push(chatRef, msg);
+            const msg = document.getElementById("msgInput").value.trim();
+            if(msg === "") return;
+            push(chatRef, { text: msg, ts: Date.now() }).catch(err => console.error('push chat error', err));
             document.getElementById("msgInput").value = "";
         }
 
+        // Expose functions to global scope so inline handlers / buttons work
+        window.changeVideo = changeVideo;
+        window.sendMessage = sendMessage;
+
+        // Ayrıca bağla butonlara (sağlamlık için)
+        document.getElementById('changeBtn').addEventListener('click', changeVideo);
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+
+        // Dinleyiciler: video güncelleme
+        onValue(videoRef, (snapshot) => {
+            const videoID = snapshot.val();
+            if(videoID) {
+                const frame = document.getElementById("ytPlayer");
+                const src = `https://www.youtube.com/embed/${videoID}`;
+                if (frame.src !== src) frame.src = src;
+            }
+        }, (err) => console.error('videoRef onValue error', err));
+
+        // Sohbet dinleyici
         onValue(chatRef, (snapshot) => {
-            const messages = snapshot.val();
+            const val = snapshot.val();
             const msgBox = document.getElementById("messages");
             msgBox.innerHTML = "";
-            for (let id in messages) {
-                msgBox.innerHTML += `<p>${messages[id]}</p>`;
+            if(!val) return;
+            // Firebase objesi: { key: {text,ts}, ... }
+            const items = Object.entries(val).sort((a,b)=> (a[1].ts||0)-(b[1].ts||0));
+            for (const [key, obj] of items) {
+                const p = document.createElement('p');
+                p.textContent = obj && obj.text ? obj.text : String(obj);
+                msgBox.appendChild(p);
             }
             msgBox.scrollTop = msgBox.scrollHeight;
-        });
+        }, (err) => console.error('chatRef onValue error', err));
+
     </script>
 </body>
 </html>
