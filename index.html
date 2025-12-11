@@ -4,303 +4,234 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Senin İçin Sevgilim</title>
-
     <style>
         body {
             margin: 0;
             padding: 0;
-            background: #111;    
-            color: #fff;
+            background: #f0f0f0;
             font-family: "Arial", sans-serif;
-            text-align: center;
-            line-height: 1.7;
-            overflow-x: hidden;
-        } 
+            overflow: hidden;
+            height: 100vh;
+        }
         
-        /* ŞİFRE EKRANI */
-        #passwordScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
             height: 100%;
-            background: #000;
+            padding: 20px;
+            position: relative;
+        }
+
+        .chat-box {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+            height: calc(100vh - 150px);
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .message.bot {
+            flex-direction: row;
+            align-items: flex-start;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message .bubble {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 16px;
+            background-color: #e1ffc7;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .message.bot .bubble {
+            background-color: #f0f0f0;
+        }
+
+        .message .bubble:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 10px;
+            border: 5px solid transparent;
+            border-top-color: #e1ffc7;
+        }
+
+        .message.bot .bubble:after {
+            border-top-color: #f0f0f0;
+            right: 10px;
+            left: auto;
+        }
+
+        .input-container {
             display: flex;
             align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            z-index: 9999;
-        }
-
-        #passwordScreen input {
-            padding: 12px 18px;
-            font-size: 18px;
-            border-radius: 8px;
-            border: none;
-            outline: none;
-            margin-bottom: 12px;
-            text-align: center;
-        }
-
-        #passwordScreen button {
+            justify-content: space-between;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #fff;
             padding: 10px 20px;
-            font-size: 18px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            background: #ffcc00;
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
         }
 
-        /* BAŞLIK */
+        .input-container input {
+            width: 80%;
+            padding: 12px;
+            border-radius: 25px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        .input-container button {
+            background-color: #0078d4;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .input-container button:focus {
+            outline: none;
+        }
+
+        /* Kamera Akışı */
+        #videoContainer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 150px;
+            height: 200px;
+            background-color: #000;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        #userVideo {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        /* Sohbet başlık stili */
         h1 {
-            margin-top: 40px;
-            font-size: 36px;
-            font-weight: bold;
-        }
-
-        .poem {
-            margin: 30px auto;
-            padding: 20px;
-            max-width: 900px;
-            font-size: 20px;
-            background: #1a1a1a;
-            border-radius: 12px;
-        }
-
-        /* NERGİS BUTONU */
-        #flowerBtn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #ffd700;
-            border: none;
-            padding: 12px 20px;
-            font-size: 18px;
-            border-radius: 10px;
-            cursor: pointer;
-            z-index: 50;
-            font-weight: bold;
-        }
-
-        /* KİTAP BUTONU */
-        #bookBtn {
-            position: fixed;
-            top: 70px;
-            right: 20px;
-            background: #8fd3ff;
-            border: none;
-            padding: 10px 15px;
-            font-size: 18px;
-            border-radius: 10px;
-            cursor: pointer;
-            z-index: 50;
-            font-weight: bold;
-        } 
-
-        /* ONLINE BUTONU */
-        #dailyBtn {
-            position: fixed;
-            top: 120px; 
-            right: 20px;
-            background: #ff8ba7;
-            border: none;
-            padding: 10px 15px;
-            font-size: 18px;
-            border-radius: 10px;
-            cursor: pointer;
-            z-index: 50;
-            font-weight: bold;
-        }
-
-        /* ERTE BUTONU */
-        #erteBtn {
-            position: fixed;
-            top: 170px; 
-            right: 20px;
-            background: #c29bff;
-            border: none;
-            padding: 10px 15px;
-            font-size: 18px;
-            border-radius: 10px;
-            cursor: pointer;
-            z-index: 50;
-            font-weight: bold;
-        }
-
-        /* CHAT BUTONU */
-        #chatBtn {
-            position: fixed;
-            top: 220px; 
-            right: 20px;
-            background: #7df7c2;
-            border: none;
-            padding: 10px 15px;
-            font-size: 18px;
-            border-radius: 10px;
-            cursor: pointer;
-            z-index: 50;
-            font-weight: bold;
-        }
-
-        /* DURUM BUTONU */
-        #durumBtn {
-            position: fixed;
-            top: 270px; 
-            right: 20px;
-            background: #9bb8ff;
-            border: none;
-            padding: 10px 15px;
-            font-size: 18px;
-            border-radius: 10px;
-            cursor: pointer;
-            z-index: 50;
-            font-weight: bold;
-        }
-
-        /* CAM BUTONU (Yeni) */
-        #camBtn {
-            position: fixed;
-            top: 320px; 
-            right: 20px;
-            background: #b2f1f1;
-            border: none;
-            padding: 10px 15px;
-            font-size: 18px;
-            border-radius: 10px;
-            cursor: pointer;
-            z-index: 50;
-            font-weight: bold;
-        }
-
-        /* ÇİÇEK ANİMASYONU */
-        .flower {
-            position: fixed;
-            top: -50px;
-            font-size: 32px;
-            animation: fall linear infinite;
-        }
-
-        @keyframes fall {
-            0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
-        }
-
-        .love-languages {
-            margin-top: 40px;
-            font-size: 22px;
-            opacity: 0.95;
+            font-size: 30px;
+            color: #333;
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 30px;
         }
     </style>
 </head>
 <body>
 
-<!-- 🟡 ŞİFRE EKRANI -->
-<div id="passwordScreen">
-    <h2>Giriş için şifre gerekli</h2>
-    <input type="password" id="passwordInput" placeholder="Şifreyi gir...">
-    <button onclick="checkPassword()">Giriş Yap</button>
-</div>
+    <h1>Senin İçin Sevgilim</h1>
 
-<!-- 🌼 NERGİS BUTONU -->
-<button id="flowerBtn" onclick="toggleFlowers()">🌼 cicek Uçur</button>
+    <div class="chat-container">
+        <!-- Video container -->
+        <div id="videoContainer">
+            <video id="userVideo" autoplay></video>
+        </div>
 
-<!-- 📖 BOOK BUTONU -->
-<button id="bookBtn" onclick="window.location.href='book.html'">sayac</button>
+        <!-- Sohbet kutusu -->
+        <div class="chat-box" id="chatBox">
+            <!-- Mesajlar buraya eklenecek -->
+            <div class="message bot">
+                <div class="bubble">Merhaba Esma! ❤️</div>
+            </div>
+            <div class="message user">
+                <div class="bubble">Merhaba! Nasılsın? 😊</div>
+            </div>
+            <div class="message bot">
+                <div class="bubble">Ben çok iyiyim, teşekkür ederim! Sen nasılsın?</div>
+            </div>
+            <div class="message user">
+                <div class="bubble">Ben de iyiyim, çok mutluyum! 💕</div>
+            </div>
+        </div>
 
-<!-- 📘 GÜNLÜK BUTONU -->
-<button id="dailyBtn" onclick="window.location.href='daily.html'">online</button>
+        <!-- Mesaj giriş alanı -->
+        <div class="input-container">
+            <input type="text" id="userMessage" placeholder="Mesajınızı yazın..." oninput="enableSend()">
+            <button id="sendButton" onclick="sendMessage()" disabled>📝</button>
+        </div>
+    </div>
 
-<!-- 🟣 ERTE BUTONU -->
-<button id="erteBtn" onclick="window.location.href='erte.html'">erte</button>
-
-<!-- 💬 CHAT BUTONU -->
-<button id="chatBtn" onclick="window.location.href='chat.html'">chat</button>
-
-<!-- 💙 DURUM BUTONU -->
-<button id="durumBtn" onclick="window.location.href='durum.html'">durum</button>
-
-<!-- 💎 CAM BUTONU (Yeni) -->
-<button id="camBtn" onclick="window.location.href='bla.html'">cam</button>
-
-<h1>Senin İçin Sevgilim</h1>
-
-<div class="poem">
-    <p>
-        Bir yaz akşamı, saatlerin susup dinlendiği yerde —<br><br>
-        19 Ağustos 2025 geldiğinde dünya bir an durdu;<br>
-        Gözlerinle buluştuğum o ilk an, içimde bir şarkı çalmaya başladı.<br><br>
-        Ertesi gün, 20 Ağustos 2025’e dönerken zaman daha yakın, daha sıcak oldu;<br>
-        İki gün, iki nefes, ve kalbim seninle verdi ilk gerçek sözünü.<br><br>
-        Esma, adın dudaklarımda bir huzur, gülüşünse sabahın aydınlığı;<br>
-        Seninle her basit an bile bir şiire dönüşür, sıradan sokaklar bile şiir okur.<br><br>
-        İyi ki geldin; iyi ki rastladım sana, iyi ki ellerimiz kavuştu—<br>
-        Şimdi her gün, o iki günün tekrarı gibi; taze, heyecanlı ve gerçek.<br><br>
-        Bu satırlar küçük bir hediye, ama bil ki seni tarif etmeye yetmez—<br>
-        Çünkü sen, Esma, her mısrada saklı bir umut, her nefeste bir evsin.
-    </p>
-</div>
-
-<!-- ❤️ 50 DİLDE “Seni Seviyorum Esma” -->
-<div class="love-languages">
-    <p>
-        Seni seviyorum Esma • I love you Esma • Ich liebe dich Esma • Je t'aime Esma •  
-        Ti amo Esma • Te amo Esma • Eu te amo Esma • Ya tebya lyublyu Esma •  
-        Aishiteru Esma • Wo ai ni Esma • Saranghae Esma • Seni sevirem Esma •  
-        Kocham cię Esma • Jeg elsker deg Esma • Ik hou van je Esma •  
-        Saya cinta kamu Esma • Mahal kita Esma • Phom rak khun Esma •  
-        Ana uhibbuki Esma • Mi amas vin Esma • Volim te Esma • Milujem ťa Esma •  
-        Ljubim te Esma • Obicham te Esma • Mina rakastan sinua Esma •  
-        Ek het jou lief Esma • Jeg elsker deg Esma • Ég elska þig Esma •  
-        T'estimo Esma • Lubim tě Esma • Ninapenda wewe Esma •  
-        Te iubesc Esma • Tave myliu Esma • Ma armastan sind Esma •  
-        Amo-te Esma • Ya lyublyu tebya Esma • Seni seviyorum Esma 💛
-    </p>
-</div>
-
-<script>
-    // ŞİFRE KONTROL
-    function checkPassword() {
-        const input = document.getElementById("passwordInput").value;
-
-        if (input === "esma5685") {
-            document.getElementById("passwordScreen").style.display = "none";
-        } else {
-            alert("Şifre yanlış, tekrar dene ❤️");
+    <script>
+        // Kullanıcının kamerayı başlatma
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const videoElement = document.getElementById("userVideo");
+                videoElement.srcObject = stream;
+            } catch (err) {
+                console.error("Kamera başlatılamadı: ", err);
+            }
         }
-    }
 
-    // NERGİS UÇUŞ SİSTEMİ
-    let flowersActive = false;
-    let flowerInterval;
+        // Kamera başlatma fonksiyonunu çağırıyoruz
+        startCamera();
 
-    function toggleFlowers() {
-        flowersActive = !flowersActive;
+        // Mesaj gönderme fonksiyonu
+        function sendMessage() {
+            const userMessage = document.getElementById("userMessage").value;
 
-        if (flowersActive) {
-            flowerInterval = setInterval(makeFlower, 200);
-            document.getElementById("flowerBtn").textContent = "🌼 Durdur";
-        } else {
-            clearInterval(flowerInterval);
-            document.getElementById("flowerBtn").textContent = "🌼 Uçur";
+            // Kullanıcı mesajı ekleme
+            if (userMessage.trim()) {
+                const chatBox = document.getElementById("chatBox");
+
+                // Kullanıcı mesajı
+                const userDiv = document.createElement("div");
+                userDiv.classList.add("message", "user");
+                const userBubble = document.createElement("div");
+                userBubble.classList.add("bubble");
+                userBubble.textContent = userMessage;
+                userDiv.appendChild(userBubble);
+                chatBox.appendChild(userDiv);
+
+                // Bot cevabı (otomatik)
+                setTimeout(() => {
+                    const botDiv = document.createElement("div");
+                    botDiv.classList.add("message", "bot");
+                    const botBubble = document.createElement("div");
+                    botBubble.classList.add("bubble");
+                    botBubble.textContent = "Sana çok seviyorum, Esma 💛";
+                    botDiv.appendChild(botBubble);
+                    chatBox.appendChild(botDiv);
+
+                    // Chat scroll'ı en alta kaydırma
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }, 1000);
+
+                // Input'u temizle
+                document.getElementById("userMessage").value = "";
+                document.getElementById("sendButton").disabled = true;
+            }
         }
-    }
 
-    function makeFlower() {
-        let flower = document.createElement("div");
-        flower.classList.add("flower");
-        flower.innerHTML = "🌼";
-
-        let size = Math.random() * 20 + 20;
-        flower.style.fontSize = size + "px";
-
-        flower.style.left = Math.random() * 100 + "vw";
-        flower.style.animationDuration = (Math.random() * 3 + 3) + "s";
-
-        document.body.appendChild(flower);
-
-        setTimeout(() => flower.remove(), 6000);
-    }
-</script>
-
+        // Mesaj yazıldığında buton etkinleştirme
+        function enableSend() {
+            const message = document.getElementById("userMessage").value;
+            document.getElementById("sendButton").disabled = !message.trim();
+        }
+    </script>
 </body>
 </html>
