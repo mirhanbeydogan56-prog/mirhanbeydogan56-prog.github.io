@@ -25,23 +25,46 @@
     <p class="lead">Aşağıya yazıp <strong>Enter</strong> veya butona tıklayarak Google'da arama yapabilirsin.</p>
 
     <!-- Basit form: Google aramasına `q` parametresi gönderir. Sonuçlar yeni sekmede açılır. -->
-    <form action="https://www.google.com/search" method="get"  role="search">
-      <input name="q" type="search" placeholder="Bir şeyler ara..." aria-label="Google'da ara" autocomplete="off" required>
+    <form id="aramaFormu" role="search" onsubmit="ara(event)">
+      <input id="sorgu" name="q" type="search" placeholder="Bir şeyler ara..." aria-label="Ara" autocomplete="off" required>
       <button type="submit">Ara</button>
     </form>
 
-    <iframe id="sonuc" style="width:100%;height:70vh;margin-top:24px;border:1px solid #e2e8f0;border-radius:10px;" src="about:blank"></iframe>
+    <div id="sonuclar" style="text-align:left;margin-top:32px;font-size:16px;line-height:1.5"></div>
 
     <script>
-      const form = document.querySelector('form');
-      const input = document.querySelector('input[name="q"]');
-      const frame = document.getElementById('sonuc');
-
-      form.addEventListener('submit', (e) => {
+      async function ara(e){
         e.preventDefault();
-        const q = encodeURIComponent(input.value);
-        frame.src = "https://duckduckgo.com/?q=" + q;
-      });
+        const q = document.getElementById('sorgu').value;
+        const sonucDiv = document.getElementById('sonuclar');
+        sonucDiv.innerHTML = 'Yükleniyor...';
+
+        // NOT: Buraya kendi API anahtarını ve CX kodunu girmen gerekiyor
+        const API_KEY = 'AIzaSyAiFHSvh0Hck36Kwzpuuhf18aMfqJIykko';
+        const CX = 'BURAYA_CX_KODU';
+
+        const url = `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CX}&q=${encodeURIComponent(q)}`;
+
+        try {
+          const res = await fetch(url);
+          const data = await res.json();
+
+          if(!data.items){
+            sonucDiv.innerHTML = 'Sonuç bulunamadı veya API yapılandırılmadı.';
+            return;
+          }
+
+          sonucDiv.innerHTML = data.items.map(i => `
+            <div style='margin-bottom:22px;'>
+              <a href='${i.link}' target='_blank' style='font-size:18px;color:#1a73e8;text-decoration:none;'>${i.title}</a>
+              <div style='color:#475569;'>${i.snippet}</div>
+            </div>
+          `).join('');
+
+        } catch(err){
+          sonucDiv.innerHTML = 'Bir hata oluştu: ' + err;
+        }
+      }
     </script>
 
     <p class="meta">Arama sonuçları bu sayfada (iframe içinde) gösterilecektir.</p>
