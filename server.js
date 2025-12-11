@@ -1,91 +1,56 @@
-// server.js
-// Çalıştırma: npm i express ws
-// node server.js
-
-const express = require("express");
-const http = require("http");
-const WebSocket = require("ws");
-const path = require("path");
+const express = require('express');
+const http = require('http');
+const WebSocket = require('ws');
 
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-// Basit demo kullanıcı listesi
-const USERS = {
-  "alice": "demo123",
-  "bob": "demo456"
-};
+const rooms = new Map();
 
-// Bağlantılar
-wss.on("connection", (ws) => {
-  ws.isAlive = true;
-  ws.on("pong", () => (ws.isAlive = true));
-
-  ws.on("message", (raw) => {
-    let msg;
+wss.on('connection', (ws) => {
+  ws.on('message', (msg) => {
     try {
-      msg = JSON.parse(raw);
-    } catch (e) {
-      return;
-    }
+      const data = JSON.parse(msg);
+      const { type, roomId, payload } = data;
+      if (!roomId) return;
 
-    // Giriş kontrolü
-    if (msg.type === "auth") {
-      const { username, password } = msg;
-      if (USERS[username] && USERS[username] === password) {
-        ws.user = username;
-        ws.send(
-          JSON.stringify({ type: "auth", ok: true, username })
-        );
-      } else {
-        ws.send(
-          JSON.stringify({ type: "auth", ok: false, error: "Invalid credentials" })
-        );
-      }
-      return;
-    }
-
-    // Mesaj gönderme
-    if (msg.type === "chat") {
-      if (!ws.user) {
-        ws.send(JSON.stringify({ type: "error", error: "Not authenticated" }));
-        return;
-      }
-
-      const payload = {
-        type: "chat",
-        from: ws.user,
-        text: String(msg.text || ""),
-        ts: Date.now()
-      };
-
-      // Herkese gönder
-      wss.clients.forEach((c) => {
-        if (c.readyState === WebSocket.OPEN) {
-          c.send(JSON.stringify(payload));
+      switch (type) {
+        case 'join': {
+          if (!rooms.has(roomId)) rooms.set(roomId, new Set());
+          rooms.get(roomId).add(ws);
+          ws.roomId = roomId;
+          rooms.get(roomId).forEach(client => {
+            if (client !== ws && client.readyState === WebSocket.OPEN) {
+              client.send(JSON.stringify({ type: 'new-peer' }));
+            }
+          });
+          break;
         }
-      });
+        case 'signal': {
+          const clients = rooms.get(roomId);
+          if (!clients) return;
+          clients.forEach(client => {
+            if (client !== ws && client.readyState === WebSocket.OPEN) {
+              client.send(JSON.stringify({ type: 'signal', payload }));
+            }
+          });
+          break;
+        }
+      }
+    } catch (e) {
+      console.error('Invalid message', e);
     }
   });
 
-  ws.on("close", () => {});
+  ws.on('close', () => {
+    const roomId = ws.roomId;
+    if (roomId && rooms.has(roomId)) {
+      rooms.get(roomId).delete(ws);
+      if (rooms.get(roomId).size === 0) rooms.delete(roomId);
+    }
+  });
 });
 
-// Ölü bağlantıları temizleme
-setInterval(() => {
-  wss.clients.forEach((ws) => {
-    if (!ws.isAlive) return ws.terminate();
-    ws.isAlive = false;
-    ws.ping();
-  });
-}, 30000);
-
-// Statik dosya klasörü
-app.use(express.static(path.join(__dirname, "public")));
-
-// Sunucu başlat
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () =>
-  console.log("Server running on port", PORT)
-);
+server.listen(PORT, () => console.log(`Signaling server listening on ${PORT}`));
