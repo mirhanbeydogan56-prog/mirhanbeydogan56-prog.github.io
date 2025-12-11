@@ -3,170 +3,253 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Durum Takip</title>
+  <title>Futbol Tahmin Oyunu — Sahte Para</title>
   <style>
-    body{
-      font-family:Inter,system-ui;
-      margin:0;
-      height:100vh;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      background:linear-gradient(135deg,#0f172a,#1e293b,#334155);
-      background-size:400% 400%;
-      animation:bgmove 12s ease infinite;
-    }
-    @keyframes bgmove{
-      0%{background-position:0% 50%}
-      50%{background-position:100% 50%}
-      100%{background-position:0% 50%}
-    }
-    .card{
-      width:360px;
-      background:rgba(255,255,255,0.12);
-      padding:20px;
-      border-radius:16px;
-      backdrop-filter:blur(12px);
-      box-shadow:0 8px 25px rgba(0,0,0,0.3);
-      color:white;
-    }
-    h1{text-align:center;margin-bottom:14px;font-size:22px}
-    input[type=password]{width:100%;padding:10px;font-size:15px;border-radius:8px;border:1px solid #ccc;margin-top:10px}
-    button{width:100%;padding:10px;margin-top:12px;font-size:15px;border:0;border-radius:8px;background:#3b82f6;color:white;cursor:pointer}
-    .status-box{margin-top:20px;font-size:20px;font-weight:600;text-align:center;padding:16px;border-radius:12px;background:rgba(255,255,255,0.15)}
-
-    .slider-box{margin-top:20px;text-align:center}
-    input[type=range]{width:100%;appearance:none;height:10px;border-radius:10px;background:linear-gradient(90deg,#ff7a7a,#ffb3b3);outline:none}
-    input[type=range]::-webkit-slider-thumb{
-      appearance:none;
-      width:22px;height:22px;
-      background:white;
-      border-radius:50%;
-      border:3px solid #ff7a7a;
-    }
-    #percent{font-size:28px;font-weight:700;margin-top:10px;color:#ffecec}
+    :root{--bg:#0f172a;--card:#0b1220;--accent:#06b6d4;--muted:#94a3b8;--glass:rgba(255,255,255,0.03)}
+    body{font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,#071029 0%, #07172a 100%);color:#e6eef6;margin:0;padding:24px}
+    .wrap{max-width:980px;margin:0 auto}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    h1{font-size:20px;margin:0}
+    .wallet{background:var(--card);padding:12px;border-radius:12px;display:flex;gap:12px;align-items:center}
+    .balance{font-weight:700;font-size:18px}
+    .muted{color:var(--muted);font-size:13px}
+    .controls{display:flex;gap:8px}
+    button{background:var(--accent);border:0;padding:8px 12px;border-radius:8px;color:#042024;cursor:pointer}
+    input[type=number], input[type=text]{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:inherit}
+    .grid{display:grid;grid-template-columns:1fr 340px;gap:16px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:12px;border-radius:12px}
+    .match{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:10px;margin-bottom:8px;background:rgba(255,255,255,0.01)}
+    .teams{display:flex;align-items:center;gap:12px}
+    .btn-small{padding:6px 8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);cursor:pointer}
+    .bets{max-height:420px;overflow:auto}
+    .status-won{color:#a7f3d0}
+    .status-lost{color:#fecaca}
+    footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px}
+    a{color:var(--accent)}
+    @media(max-width:900px){.grid{grid-template-columns:1fr} .controls{flex-direction:column;align-items:flex-end}}
   </style>
 </head>
 <body>
+  <div class="wrap">
+    <header>
+      <h1>Futbol Tahmin Oyunu (Sahte Para)</h1>
+      <div class="wallet card">
+        <div>
+          <div class="muted">Bakiye</div>
+          <div class="balance" id="balance">0 ₺</div>
+        </div>
+        <div style="margin-left:12px" class="controls">
+          <input id="depositAmt" type="number" min="1" placeholder="Miktar" />
+          <button id="depositBtn">Para Yükle (sahte)</button>
+          <button id="resetBtn" title="LocalStorage sıfırla">Sıfırla</button>
+        </div>
+      </div>
+    </header>
 
-<div class="card" id="loginCard">
-  <h1>Durum Girişi</h1>
-  <input id="pass" type="password" placeholder="Şifreyi girin" />
-  <button id="loginBtn">Giriş Yap</button>
-</div>
+    <div class="grid">
+      <section class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <select id="leagueSelect" style="padding:6px;border-radius:8px;background:var(--glass);color:inherit;border:1px solid rgba(255,255,255,0.04)">
+            <option value="Soccer">Futbol (Tüm Ligler)</option>
+            <option value="Basketball">Basketbol</option>
+            <option value="Ice Hockey">Buz Hokeyi</option>
+            <option value="American Football">Amerikan Futbolu</option>
+          </select>
+          <strong>Bugünün Maçları (Tüm Ligler)</strong>
+          <div>
+            <button id="refreshBtn" class="btn-small">Yenile</button>
+            <button id="checkResultsBtn" class="btn-small">Sonuçları Kontrol Et</button>
+          </div>
+        </div>
+        <div id="matches" aria-live="polite">Maçlar yükleniyor...</div>
+        <p class="muted">Not: Gerçek maç verileri <em>TheSportsDB</em> API'sinden çekilmeye çalışılır. Eğer ağ engeli, CORS ya da API kısıtı olursa demo veriye döner.</p>
+      </section>
 
-<div class="card" id="statusCard" style="display:none;">
-  <h1 id="nameTitle"></h1>
-  <div class="status-box" id="ownStatus"></div>
+      <aside class="card">
+        <strong>Aktif Bahisler</strong>
+        <div class="bets" id="betsList" style="margin-top:8px">Henüz bahis yok.</div>
+        <hr style="margin:12px 0;border:none;border-top:1px solid rgba(255,255,255,0.03)" />
+        <strong>Geçmiş Bahisler</strong>
+        <div id="history" style="margin-top:8px;max-height:200px;overflow:auto">Henüz yok.</div>
+      </aside>
+    </div>
 
-  <div class="slider-box">
-    <h3>Kendi Durumun</h3>
-    <input type="range" id="energySlider" min="0" max="100" value="50">
-    <div id="percent">50%</div>
-    <button id="saveBtn" style="background:#16a34a;margin-top:15px;">Kaydet</button>
+    <footer>
+      <div>Bu site sadece oyun amaçlıdır. Hiçbir gerçek para ya da bahis aracı değildir.</div>
+      <div style="margin-top:6px">Sayfa çalışmıyorsa <a href="#" id="showDebug">hata günlüğünü göster</a>.</div>
+      <pre id="debug" style="display:none;background:#021524;padding:10px;border-radius:8px;color:#87eaf2;overflow:auto;max-height:200px"></pre>
+    </footer>
   </div>
 
-  <h3 style="margin-top:25px;" id="otherLabel">Diğer kişi</h3>
-  <div class="status-box" id="otherStatus"></div>
-</div>
-
 <script>
-  const JSONBIN_URL = "https://api.jsonbin.io/v3/b/693a5e3543b1c97be9e62340";
+const API_BASE = 'https://corsproxy.io/?https://www.thesportsdb.com/api/v1/json/1/eventsday.php';
+const storageKey = 'ft_wallet_v1';
+const betsKey = 'ft_bets_v1';
 
-  /* SENİN VERDİĞİN ACCESS-KEY HASH */
-  const ACCESS_KEY = "$2a$10$78iwWT7g3g3.ayvhnmws7egyINya1vwu5BY7exFe4Jxl6ZKRDDmGO";
+function dbg(msg){const el=document.getElementById('debug');el.style.display='block';el.textContent+=msg+"\n"}
 
-  const PASSWORDS = { 
-    esma: "esma5685", 
-    mirhan: "mirhan5685" 
-  };
+function loadState(){
+  const s = JSON.parse(localStorage.getItem(storageKey) || '{}');
+  return {balance: s.balance||0};
+}
+function saveState(state){localStorage.setItem(storageKey, JSON.stringify(state));}
 
-  let DATA = { esma: 50, mirhan: 50 };
+function loadBets(){return JSON.parse(localStorage.getItem(betsKey)||'[]');}
+function saveBets(b){localStorage.setItem(betsKey, JSON.stringify(b));}
 
-  async function loadData(){
-    const res = await fetch(JSONBIN_URL, {
-      headers:{
-        "X-ACCESS-KEY": ACCESS_KEY,
-        "X-Bin-Versioning": "false"
+function formatCurrency(n){return Number(n).toLocaleString('tr-TR') + ' ₺'}
+
+function renderBalance(){const s=loadState();document.getElementById('balance').textContent=formatCurrency(s.balance)}
+
+function deposit(amount){const state=loadState();state.balance = Number(state.balance) + Number(amount);saveState(state);renderBalance();}
+
+function resetAll(){if(!confirm('LocalStorage sıfırlansın mı?')) return;localStorage.removeItem(storageKey);localStorage.removeItem(betsKey);renderBalance();renderBets();document.getElementById('matches').innerHTML='';}
+
+function fetchMatchesForToday(){
+  const league = document.getElementById('leagueSelect').value;
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth()+1).padStart(2,'0');
+  const dd = String(today.getDate()).padStart(2,'0');
+  const url = `${API_BASE}?d=${yyyy}-${mm}-${dd}&s=${encodeURIComponent(league)}`;
+
+  fetch(url).then(r=>r.json()).then(data=>{
+    if(data && data.events){ renderMatches(data.events); }
+    else renderMatches([]);
+  }).catch(err=>{
+    dbg('API hata: '+err);
+    renderMatches([]);
+  });
+}
+
+function demoMatches(){
+  // fallback demo data with the same shape as TheSportsDB events
+  return [
+    {idEvent:'demo1', strEvent:'Galatasaray vs Fenerbahçe', strHomeTeam:'Galatasaray', strAwayTeam:'Fenerbahçe', dateEvent:'2025-12-11', strTime:'18:00:00', intHomeScore:null, intAwayScore:null},
+    {idEvent:'demo2', strEvent:'Beşiktaş vs Trabzonspor', strHomeTeam:'Beşiktaş', strAwayTeam:'Trabzonspor', dateEvent:'2025-12-11', strTime:'20:30:00', intHomeScore:2, intAwayScore:1}
+  ];
+}
+
+function renderMatches(events){
+  const wrap = document.getElementById('matches');
+  if(!events || events.length===0){wrap.innerHTML='<div class="muted">Bugün maç bulunamadı.</div>';return}
+  wrap.innerHTML = '';
+  events.forEach(ev=>{
+    const m = document.createElement('div');m.className='match';
+    const teams = document.createElement('div');teams.className='teams';
+    const left = document.createElement('div');left.innerHTML = `<div style="font-weight:700">${ev.strHomeTeam}</div><div class="muted" style="font-size:12px">${ev.dateEvent} ${ev.strTime||''}</div>`;
+    const vs = document.createElement('div');vs.innerHTML=`<div style="text-align:center;font-weight:700">vs</div>`;
+    const right = document.createElement('div');right.innerHTML = `<div style="font-weight:700;text-align:right">${ev.strAwayTeam}</div>`;
+    teams.appendChild(left);teams.appendChild(vs);teams.appendChild(right);
+    m.appendChild(teams);
+
+    const controls = document.createElement('div');
+    const scoreText = (ev.intHomeScore!=null && ev.intAwayScore!=null) ? `${ev.intHomeScore} - ${ev.intAwayScore}` : '<span class="muted">Henüz</span>';
+    const scoreEl = document.createElement('div');scoreEl.innerHTML = `<div style="font-size:13px;margin-bottom:6px">Sonuç: ${scoreText}</div>`;
+    controls.appendChild(scoreEl);
+
+    const betBtn = document.createElement('button');betBtn.className='btn-small';betBtn.textContent='Tahmin Yap';
+    betBtn.onclick = ()=>openBetModal(ev);
+    controls.appendChild(betBtn);
+
+    m.appendChild(controls);
+    wrap.appendChild(m);
+  });
+}
+
+function openBetModal(match){
+  const amt = prompt(`${match.strHomeTeam} - ${match.strAwayTeam}\nTahmininizi girin (Home / Draw / Away) ve tutarı örnek: Home,50`);
+  if(!amt) return; const parts = amt.split(',').map(s=>s.trim()); if(parts.length!==2){alert('Format: Seçim,HedefTutar — örn: Home,50');return}
+  const choice = parts[0]; const amount = Number(parts[1]); if(!['Home','Draw','Away'].includes(choice)){alert('Seçim Home, Draw veya Away olmalı.');return}
+  if(!amount || amount<=0){alert('Geçerli miktar girin.');return}
+  const state = loadState(); if(state.balance < amount){alert('Yetersiz bakiye');return}
+  state.balance -= amount; saveState(state); renderBalance();
+  const bets = loadBets(); bets.push({id:match.idEvent||match.idEvent, home:match.strHomeTeam, away:match.strAwayTeam, date:match.dateEvent, time:match.strTime||'', choice, amount, settled:false, result:null}); saveBets(bets); renderBets();
+}
+
+function renderBets(){
+  const list = loadBets();
+  const el = document.getElementById('betsList');
+  const hist = document.getElementById('history');
+  if(list.length===0){el.innerHTML='Henüz bahis yok.'; hist.innerHTML='Henüz yok.'; return}
+  const active = list.filter(b=>!b.settled);
+  const past = list.filter(b=>b.settled);
+  el.innerHTML = '';
+  active.forEach((b,idx)=>{
+    const d = document.createElement('div');d.style.padding='8px';d.style.borderBottom='1px solid rgba(255,255,255,0.02)';
+    d.innerHTML = `<div style="font-weight:700">${b.home} — ${b.away}</div><div class="muted">Tahmin: ${b.choice} • Tutar: ${formatCurrency(b.amount)} • Tarih: ${b.date} ${b.time}</div>`;
+    el.appendChild(d);
+  });
+  hist.innerHTML='';
+  past.forEach(b=>{
+    const p = document.createElement('div');p.style.padding='8px';p.style.borderBottom='1px solid rgba(255,255,255,0.02)';
+    const cls = b.result==='win' ? 'status-won' : 'status-lost';
+    p.innerHTML = `<div style="font-weight:700">${b.home} — ${b.away}</div><div class="muted">Tahmin: ${b.choice} • Tutar: ${formatCurrency(b.amount)} • Sonuç: <span class="${cls}">${b.result.toUpperCase()}</span></div>`;
+    hist.appendChild(p);
+  });
+}
+
+function checkResults(){
+  // Re-fetch today's matches and update bets where scores are present
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth()+1).padStart(2,'0');
+  const dd = String(today.getDate()).padStart(2,'0');
+  const dateStr = `${yyyy}-${mm}-${dd}`;
+  const url = API_BASE + '?d=' + dateStr + '&s=Soccer';
+  fetch(url).then(r=>r.json()).then(data=>{
+    const events = (data && data.events) ? data.events : demoMatches();
+    let bets = loadBets();
+    let changed=false;
+    bets = bets.map(b=>{
+      const ev = events.find(e => (e.idEvent && e.idEvent==b.id) || (e.strEvent && (e.strEvent.includes(b.home) && e.strEvent.includes(b.away))));
+      if(!ev) return b;
+      if(ev.intHomeScore!=null && ev.intAwayScore!=null && !b.settled){
+        const home = Number(ev.intHomeScore); const away = Number(ev.intAwayScore);
+        let outcome = 'Draw'; if(home>away) outcome='Home'; else if(away>home) outcome='Away';
+        if(outcome === b.choice){ b.result='win'; b.settled=true; // payout 2x
+          const state = loadState(); state.balance += b.amount * 2; saveState(state); renderBalance();
+        } else { b.result='lose'; b.settled=true; }
+        changed=true;
       }
+      return b;
     });
-    const json = await res.json();
-    DATA = json.record;
-  }
-
-  async function saveData(){
-    await fetch(JSONBIN_URL, {
-      method:"PUT",
-      headers:{
-        "Content-Type": "application/json",
-        "X-ACCESS-KEY": ACCESS_KEY,
-        "X-Bin-Versioning": "false"
-      },
-      body: JSON.stringify(DATA)
+    if(changed){ saveBets(bets); renderBets(); alert('Bazı bahislerin sonuçları güncellendi.'); }
+    else alert('Yeni sonuç bulunamadı (henüz maç tamamlanmamış veya API veri yok).');
+  }).catch(err=>{dbg('checkResults hata: '+err); alert('API hatası — demo verisi kontrol edildi.');
+    // try demo
+    const events = demoMatches();
+    // same logic
+    let bets = loadBets(); let changed=false;
+    bets = bets.map(b=>{
+      const ev = events.find(e => (e.idEvent && e.idEvent==b.id) || (e.strEvent && (e.strEvent.includes(b.home) && e.strEvent.includes(b.away))));
+      if(!ev) return b;
+      if(ev.intHomeScore!=null && ev.intAwayScore!=null && !b.settled){
+        const home = Number(ev.intHomeScore); const away = Number(ev.intAwayScore);
+        let outcome = 'Draw'; if(home>away) outcome='Home'; else if(away>home) outcome='Away';
+        if(outcome === b.choice){ b.result='win'; b.settled=true; const state = loadState(); state.balance += b.amount * 2; saveState(state); renderBalance(); } else { b.result='lose'; b.settled=true; }
+        changed=true;
+      }
+      return b;
     });
-  }
-
-  document.getElementById("loginBtn").addEventListener("click", async () => {
-    const p = document.getElementById("pass").value.trim();
-    let user = null;
-
-    if (p === PASSWORDS.esma) user = "esma";
-    if (p === PASSWORDS.mirhan) user = "mirhan";
-
-    if (!user) return alert("Hatalı şifre!");
-
-    await loadData();
-
-    window.currentUser = user;
-    showStatus(user);
+    if(changed){ saveBets(bets); renderBets(); alert('Demo veriye göre bazı bahisler sonuçlandı.'); } else alert('Demo veriye göre sonuclar yok.');
   });
+}
 
-  function showStatus(user){
-    loginCard.style.display = "none";
-    statusCard.style.display = "block";
+// init
+renderBalance(); renderBets(); fetchMatchesForToday();
 
-    const nameTitle = document.getElementById("nameTitle");
-    const ownStatus = document.getElementById("ownStatus");
-    const otherStatus = document.getElementById("otherStatus");
-    const slider = document.getElementById("energySlider");
-    const percent = document.getElementById("percent");
+// events
+document.getElementById('depositBtn').addEventListener('click', ()=>{
+  const v = Number(document.getElementById('depositAmt').value);
+  if(!v || v<=0) return alert('Geçerli miktar girin.'); deposit(v); document.getElementById('depositAmt').value='';
+});
+document.getElementById('resetBtn').addEventListener('click', resetAll);
+document.getElementById('refreshBtn').addEventListener('click', fetchMatchesForToday);
+document.getElementById('checkResultsBtn').addEventListener('click', checkResults);
 
-    if(user === "esma"){ 
-      document.getElementById("otherLabel").textContent = "mirooo";
-      nameTitle.textContent = "Esma'nın Durumu";
-      slider.value = DATA.esma;
-      percent.textContent = slider.value + "%";
-      ownStatus.textContent = slider.value + "% enerji";
-      otherStatus.textContent = DATA.mirhan + "% enerji";
-    }
+document.getElementById('showDebug').addEventListener('click',(e)=>{e.preventDefault(); const d=document.getElementById('debug'); d.style.display = d.style.display==='none' ? 'block' : 'none';});
 
-    if(user === "mirhan"){ 
-      document.getElementById("otherLabel").textContent = "esoo";
-      nameTitle.textContent = "Mirhan'ın Durumu";
-      slider.value = DATA.mirhan;
-      percent.textContent = slider.value + "%";
-      ownStatus.textContent = slider.value + "% enerji";
-      otherStatus.textContent = DATA.esma + "% enerji";
-    }
-  }
-
-  document.getElementById("energySlider").addEventListener("input", e =>{
-    document.getElementById("percent").textContent = e.target.value + "%";
-  });
-
-  document.getElementById("saveBtn").addEventListener("click", async ()=>{
-    const val = Number(document.getElementById("energySlider").value);
-    const user = window.currentUser;
-
-    if(user === "esma") DATA.esma = val;
-    if(user === "mirhan") DATA.mirhan = val;
-
-    await saveData();
-
-    document.getElementById("ownStatus").textContent = val + "% enerji";
-    alert("Durum buluta kaydedildi!");
-  });
 </script>
-
 </body>
 </html>
