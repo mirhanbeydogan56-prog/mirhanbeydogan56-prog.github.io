@@ -1,122 +1,107 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Görüntülü Sohbet</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: #f0f0f0;
-            font-family: "Arial", sans-serif;
-            overflow: hidden;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* Ekranda video konumları */
-        #videoContainer {
-            position: relative;
-            width: 80vw;
-            height: 80vh;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-
-        /* Kullanıcı video stili */
-        #userVideo {
-            width: 48%;
-            height: 100%;
-            background-color: #000;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Karşıdaki kişi video stili */
-        #partnerVideo {
-            width: 48%;
-            height: 100%;
-            background-color: #000;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Alt köşedeki küçük video */
-        #smallVideo {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            width: 150px;
-            height: 200px;
-            background-color: #000;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Sohbet başlık stili */
-        h1 {
-            font-size: 30px;
-            color: #333;
-            text-align: center;
-            margin-top: 20px;
-        }
-    </style>
+  <meta charset="utf-8">
+  <title>WebRTC Video Chat</title>
+  <style>
+    video { width: 400px; border: 1px solid #333; margin: 10px; }
+  </style>
 </head>
 <body>
 
-    <h1>Görüntülü Sohbet</h1>
+<h2>WebRTC Video Chat</h2>
 
-    <!-- Video Konteyneri -->
-    <div id="videoContainer">
-        <!-- Kullanıcı Video -->
-        <video id="userVideo" autoplay></video>
+<label>Oda Adı (ör: mirhan5685): </label>
+<input id="roomInput" value="mirhan5685">
+<button onclick="joinRoom()">Join Room</button>
 
-        <!-- Karşıdaki Kişi Video -->
-        <video id="partnerVideo" autoplay></video>
-    </div>
+<br><br>
 
-    <!-- Küçük video kutusu -->
-    <div id="smallVideo">
-        <video id="smallUserVideo" autoplay muted></video>
-    </div>
+<video id="localVideo" autoplay muted></video>
+<video id="remoteVideo" autoplay></video>
 
-    <script>
-        // Kullanıcı video akışını başlatma
-        async function startUserVideo() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                const userVideo = document.getElementById("userVideo");
-                userVideo.srcObject = stream;
+<script>
+let localVideo = document.getElementById("localVideo");
+let remoteVideo = document.getElementById("remoteVideo");
 
-                // Küçük video kutusunda da kullanıcıyı göster
-                const smallUserVideo = document.getElementById("smallUserVideo");
-                smallUserVideo.srcObject = stream;
+let pc;
+let ws;
+let room;
 
-                return stream;
-            } catch (err) {
-                console.error("Kamera başlatılamadı: ", err);
-            }
+// --------------- LOCAL VIDEO ---------------
+navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+.then(stream => {
+    localVideo.srcObject = stream;
+    window.localStream = stream;
+});
+
+// --------------- JOIN ROOM ---------------
+function joinRoom() {
+  room = document.getElementById("roomInput").value;
+  ws = new WebSocket("ws://localhost:3000");
+
+  ws.onopen = () => {
+    ws.send(JSON.stringify({ type: "join", room }));
+  };
+
+  ws.onmessage = async (msg) => {
+    let data = JSON.parse(msg.data);
+
+    if (data.type === "new-peer") {
+      createPeerConnection();
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
+      ws.send(JSON.stringify({ type: "signal", room, payload: { sdp: offer }}));
+    }
+
+    if (data.type === "signal") {
+      let payload = data.payload;
+
+      if (payload.sdp) {
+        if (!pc) createPeerConnection();
+
+        await pc.setRemoteDescription(payload.sdp);
+
+        if (payload.sdp.type === "offer") {
+          let answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          ws.send(JSON.stringify({ type: "signal", room, payload: { sdp: answer }}));
         }
+      }
 
-        // Karşıdaki kişinin video akışını simüle etme
-        async function startPartnerVideo() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                const partnerVideo = document.getElementById("partnerVideo");
-                partnerVideo.srcObject = stream;
-            } catch (err) {
-                console.error("Partnerin kamerası bağlanamadı: ", err);
-            }
-        }
+      if (payload.candidate) {
+        pc.addIceCandidate(payload.candidate);
+      }
+    }
+  };
+}
 
-        // Kameraları başlatma
-        startUserVideo();
-        startPartnerVideo();
-    </script>
+// --------------- PEER CONNECTION ---------------
+function createPeerConnection() {
+  pc = new RTCPeerConnection({
+    iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+  });
+
+  // local tracks
+  window.localStream.getTracks().forEach(track => pc.addTrack(track, window.localStream));
+
+  // remote tracks
+  pc.ontrack = (e) => {
+    remoteVideo.srcObject = e.streams[0];
+  };
+
+  pc.onicecandidate = (e) => {
+    if (e.candidate) {
+      ws.send(JSON.stringify({
+        type: "signal",
+        room,
+        payload: { candidate: e.candidate }
+      }));
+    }
+  };
+}
+</script>
 
 </body>
 </html>
