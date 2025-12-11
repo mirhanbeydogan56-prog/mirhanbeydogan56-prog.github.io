@@ -35,7 +35,7 @@
     button{width:100%;padding:10px;margin-top:12px;font-size:15px;border:0;border-radius:8px;background:#3b82f6;color:white;cursor:pointer}
     .status-box{margin-top:20px;font-size:20px;font-weight:600;text-align:center;padding:16px;border-radius:12px;background:rgba(255,255,255,0.15)}
 
-    /* SLIDER */
+    /* SLIDER TASARIMI */
     .slider-box{margin-top:20px;text-align:center}
     input[type=range]{width:100%;appearance:none;height:10px;border-radius:10px;background:linear-gradient(90deg,#ff7a7a,#ffb3b3);outline:none}
     input[type=range]::-webkit-slider-thumb{
@@ -72,32 +72,26 @@
 </div>
 
 <script>
-  /* ============================
+  /* =============================
      JSONBIN AYARLARI
-  ============================ */
-
-  const JSONBIN_URL = "https://api.jsonbin.io/v3/b/693a5e3543b1c97be9e62340";  // ✔ yeni bin ID
+     ============================= */
+  const JSONBIN_URL = "https://api.jsonbin.io/v3/b/693a5e3543b1c97be9e62340";
   const JSONBIN_KEY = "$2a$10$crw50rDviktX/qTN4XNj8eT9o6yJwPwv1wdlzXnu9YifkdKD9HxCG";
 
-  /* Varsayılan JSON formatı:
-     {
-       "esma": 50,
-       "mirhan": 50
-     }
-  */
-
-  /* Şifreler */
-  const PASSWORDS = { 
-    esma: "esma5685", 
-    mirhan: "mirhan5685" 
-  };
+  /* ------------------
+     Şifreler
+  ------------------ */
+  const PASSWORDS = { esma: "esma5685", mirhan: "mirhan5685" };
 
   let DATA = { esma: 50, mirhan: 50 };
 
   async function loadData(){
     try{
       const res = await fetch(JSONBIN_URL, {
-        headers:{ "X-Master-Key": JSONBIN_KEY }
+        headers:{
+          "X-Master-Key": JSONBIN_KEY,
+          "X-Bin-Versioning": "false"
+        }
       });
       const json = await res.json();
       DATA = json.record;
@@ -110,14 +104,20 @@
         method:"PUT",
         headers:{
           "Content-Type": "application/json",
-          "X-Master-Key": JSONBIN_KEY
+          "X-Master-Key": JSONBIN_KEY,
+          "X-Bin-Versioning": "false"
         },
         body: JSON.stringify(DATA)
       });
     }catch(err){ alert("Kaydedilemedi"); }
   }
 
-  /* ---- Giriş ---- */
+  /* ------------------
+     Giriş İşlemi
+  ------------------ */
+  const loginCard = document.getElementById("loginCard");
+  const statusCard = document.getElementById("statusCard");
+
   document.getElementById("loginBtn").addEventListener("click", async () => {
     const p = document.getElementById("pass").value.trim();
     let user = null;
@@ -133,10 +133,9 @@
     showStatus(user);
   });
 
-  /* ---- Durum Göster ---- */
   function showStatus(user){
-    document.getElementById("loginCard").style.display = "none";
-    document.getElementById("statusCard").style.display = "block";
+    loginCard.style.display = "none";
+    statusCard.style.display = "block";
 
     const nameTitle = document.getElementById("nameTitle");
     const ownStatus = document.getElementById("ownStatus");
@@ -163,12 +162,10 @@
     }
   }
 
-  /* Slider değişince yazıyı güncelle */
   document.getElementById("energySlider").addEventListener("input", e =>{
     document.getElementById("percent").textContent = e.target.value + "%";
   });
 
-  /* Kaydet */
   document.getElementById("saveBtn").addEventListener("click", async ()=>{
     const val = Number(document.getElementById("energySlider").value);
     const user = window.currentUser;
@@ -179,7 +176,7 @@
     await saveData();
 
     document.getElementById("ownStatus").textContent = val + "% enerji";
-    alert("Durum kaydedildi!");
+    alert("Durum buluta kaydedildi!");
   });
 </script>
 
