@@ -26,5 +26,16 @@
   <!-- Google Custom Search Engine Script -->
   <script async src="https://cse.google.com/cse.js?cx=65fe8ab330e4f4b6f"></script>
 
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const observer = new MutationObserver(() => {
+        document.querySelectorAll(".gs-title a").forEach(a => {
+            a.removeAttribute("target");
+        });
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+});
+</script>
 </body>
 </html>
