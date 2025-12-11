@@ -209,7 +209,7 @@
 
         arr.forEach(([k,v]) => {
             const div = document.createElement("div");
-            div.className = "msg " + (v.sender === "me" ? "me" : "other");
+            div.className = "msg " + (v.sender === "right" ? "me" : "other");
             div.textContent = v.text;
 
             // Tek tıklama: küçük kalp ekle
@@ -248,12 +248,6 @@ pinBtn.addEventListener("click", () => {
         lockScreen.style.display = "none";
     } else if (pinInput.value === "mirhan5685") {
         currentUser = "right"; // sağdaki kullanıcı
-        lockScreen.style.display = "none";
-    } else {
-        pinError.textContent = "Yanlış şifre!";
-    }
-});("click", () => {
-    if (pinInput.value === "esma5685") {
         lockScreen.style.display = "none";
     } else {
         pinError.textContent = "Yanlış şifre!";
