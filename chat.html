@@ -49,6 +49,7 @@
         display: inline-block;
         font-size: 15px;
         animation: pop 0.2s ease;
+        word-break: break-word;
     }
     @keyframes pop {
         from { transform: scale(0.8); opacity: 0;} to { transform: scale(1); opacity: 1; }
@@ -58,6 +59,7 @@
         background: #6a5acd;
         align-self: flex-end;
         border-bottom-right-radius: 0;
+        color: #021;
     }
 
     .other {
@@ -71,6 +73,7 @@
         height: 20px;
         margin-left: 10px;
         color: #a0a0ff;
+        padding: 6px 12px;
     }
 
     #controls {
@@ -125,6 +128,15 @@
 </style>
 </head>
 <body>
+
+<!-- 🔐 Şifre Giriş Ekranı -->
+<div id="lockScreen" style="position:fixed; inset:0; background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:9999;">
+    <h2 style="color:white; font-size:26px; margin-bottom:20px;">Giriş Şifresi</h2>
+    <input id="pinInput" type="password" placeholder="Şifre..." style="padding:12px; font-size:18px; border-radius:8px; border:none; text-align:center;">
+    <button id="pinBtn" style="margin-top:15px; padding:10px 20px; font-size:18px; border:none; border-radius:8px; background:#6a5acd; color:white;">Giriş</button>
+    <p id="pinError" style="color:red; margin-top:10px; font-size:14px;"></p>
+</div>
+
     <div id="chatBox"></div>
     <div id="typing"></div>
 
@@ -193,25 +205,43 @@
             const div = document.createElement("div");
             div.className = "msg " + (v.sender === "me" ? "me" : "other");
             div.textContent = v.text;
+
+            // Tek tıklama: küçük kalp ekle
             div.addEventListener('click', () => {
                 div.textContent += ' 💞';
+                // also update remote? optional - we just add locally
             });
 
-            /* 💥 Çift tıklayınca büyük kalp patlaması */
+            // 💥 Çift tıklayınca büyük kalp patlaması
             div.addEventListener('dblclick', () => {
                 const burst = document.createElement('div');
                 burst.className = 'heart-burst';
                 burst.textContent = '💖';
                 div.appendChild(burst);
                 setTimeout(() => burst.remove(), 600);
-            });, () => {
-                div.textContent += ' 💞';
             });
+
             box.appendChild(div);
         });
 
         box.scrollTop = box.scrollHeight;
     });
 </script>
+<script>
+// 🔐 Şifre sistemi ― PIN: esma5685
+const lockScreen = document.getElementById("lockScreen");
+const pinInput = document.getElementById("pinInput");
+const pinBtn = document.getElementById("pinBtn");
+const pinError = document.getElementById("pinError");
+
+pinBtn.addEventListener("click", () => {
+    if (pinInput.value === "esma5685") {
+        lockScreen.style.display = "none";
+    } else {
+        pinError.textContent = "Yanlış şifre!";
+    }
+});
+</script>
+
 </body>
 </html>
