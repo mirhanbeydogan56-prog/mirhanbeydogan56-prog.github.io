@@ -1,52 +1,26 @@
-const express = require('express');
-const Pusher = require('pusher');
-const bodyParser = require('body-parser');
+const WebSocket = require('ws');
+const wss = new WebSocket.Server({ port: 8080 }); // WebSocket sunucusu, port 8080'de çalışacak
 
-const app = express();
-const port = 3000;
+// WebSocket bağlantısı kurulduğunda
+wss.on('connection', (ws) => {
+    console.log('Yeni bir kullanıcı bağlandı.');
 
-// Pusher API Anahtarlarınızı buraya girin
-const pusher = new Pusher({
-    appId: '2089917', // Pusher app ID
-    key: '03a4356cfe7da7f2209', // Pusher Key
-    secret: '0b888c0251dd0e0f62a9', // Pusher Secret
-    cluster: 'eu', // Pusher Cluster
-    useTLS: true
-});
+    // Mesaj alındığında
+    ws.on('message', (message) => {
+        console.log('Mesaj alındı:', message);
 
-// JSON verisini işlemek için body-parser'ı kullanacağız
-app.use(bodyParser.json());
-
-// WebRTC sinyalleme işlemleri için Pusher üzerinden sinyal gönderiyoruz
-
-// Teklif gönderme
-app.post('/offer', (req, res) => {
-    pusher.trigger('webrtc-channel', 'client-offer', {
-        offer: req.body.offer
+        // Gelen mesajı tüm bağlı kullanıcılara ilet
+        wss.clients.forEach((client) => {
+            if (client !== ws && client.readyState === WebSocket.OPEN) {
+                client.send(message); // Mesajı diğer kullanıcılara ilet
+            }
+        });
     });
-    res.send('Offer gönderildi');
-});
 
-// Cevap gönderme
-app.post('/answer', (req, res) => {
-    pusher.trigger('webrtc-channel', 'client-answer', {
-        answer: req.body.answer
+    // Bağlantı kapandığında
+    ws.on('close', () => {
+        console.log('Bir kullanıcı ayrıldı.');
     });
-    res.send('Answer gönderildi');
 });
 
-// ICE candidate gönderme
-app.post('/ice-candidate', (req, res) => {
-    pusher.trigger('webrtc-channel', 'client-ice-candidate', {
-        candidate: req.body.candidate
-    });
-    res.send('ICE candidate gönderildi');
-});
-
-// Public klasörü statik dosya olarak servis et
-app.use(express.static('public'));
-
-// Sunucuyu başlatıyoruz
-app.listen(port, () => {
-    console.log(`Sunucu ${port} portunda çalışıyor`);
-});
+console.log('WebSocket sunucusu çalışıyor...');
