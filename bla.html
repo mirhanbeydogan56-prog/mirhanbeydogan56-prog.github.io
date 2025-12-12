@@ -31,6 +31,8 @@
 
     footer{margin-top:14px;font-size:0.85rem;color:var(--muted)}
 
+    .status{font-size:0.85rem;color:var(--muted);margin-top:8px}
+
     @media (max-width:520px){.pwBox{width:92%}}
   </style>
 </head>
@@ -67,95 +69,92 @@
         </div>
       </div>
 
+      <div class="status" id="status">Verbindung prüfen...</div>
+
       <footer>
         Nachrichten werden in Firestore gespeichert. Für Produktion: Auth + Sicherheitsregeln konfigurieren.
       </footer>
     </main>
   </div>
 
-  <!-- Firebase SDK - using compat build for simplicity. Ersetze die firebaseConfig-Variable weiter unten mit deinen Werten. -->
+  <!-- Firebase compat SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
   <script>
-    // === 1) Firebase-Konfiguration ===
-    // Ich habe die von dir bereitgestellten Werte hier eingefügt. Falls du lieber Platzhalter möchtest, sag Bescheid.
-    const firebaseConfig = {
-      apiKey: "AIzaSyDxr-d1ZKp3wt3i289o6FKmevr3s8Uw3WA",
-      authDomain: "okuler.firebaseapp.com",
-      databaseURL: "https://okuler-default-rtdb.firebaseio.com",
-      projectId: "okuler",
-      storageBucket: "okuler.firebasestorage.app",
-      messagingSenderId: "853942864718",
-      appId: "1:853942864718:web:337671e3596467ae7e6c1f",
-      measurementId: "G-2VTELY91G3"
-    };
+    (function(){
+      const firebaseConfig = {
+        apiKey: "AIzaSyDxr-d1ZKp3wt3i289o6FKmevr3s8Uw3WA",
+        authDomain: "okuler.firebaseapp.com",
+        databaseURL: "https://okuler-default-rtdb.firebaseio.com",
+        projectId: "okuler",
+        storageBucket: "okuler.firebasestorage.app",
+        messagingSenderId: "853942864718",
+        appId: "1:853942864718:web:337671e3596467ae7e6c1f",
+        measurementId: "G-2VTELY91G3"
+      };
 
-    // === 2) Initialisieren ===
-    // Wir nutzen hier die compat-SDK (eingebunden oben) so dass die einfache API wie vorher funktioniert.
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+      if(!firebase.apps.length){ firebase.initializeApp(firebaseConfig); }
 
-    // Passwort-Gate (Client-seitig). Gewünschtes Passwort: Hogachat
-    const SECRET = 'Hogachat';
-    const pwModal = document.getElementById('pwModal');
-    const app = document.getElementById('app');
-    const pwInput = document.getElementById('pw');
-    const pwBtn = document.getElementById('pwBtn');
+      const db = firebase.database();
 
-    function enterIfCorrect(){
-      const v = pwInput.value || '';
-      if(v === SECRET){
-        pwModal.style.display = 'none';
-        app.style.display = '';
-        startChat();
-      } else {
-        alert('Falsches Passwort.');
+      const SECRET = 'Hogachat';
+      const pwModal = document.getElementById('pwModal');
+      const app = document.getElementById('app');
+      const pwInput = document.getElementById('pw');
+      const pwBtn = document.getElementById('pwBtn');
+      const statusEl = document.getElementById('status');
+
+      function enterIfCorrect(){
+        if(pwInput.value === SECRET){
+          pwModal.style.display = 'none';
+          app.style.display = '';
+          startChat();
+        } else alert('Falsches Passwort.');
       }
-    }
-    pwBtn.addEventListener('click', enterIfCorrect);
-    pwInput.addEventListener('keyup', (e)=>{ if(e.key === 'Enter') enterIfCorrect(); });
 
-    // Chat-Funktionen
-    function startChat(){
-      const messagesEl = document.getElementById('messages');
-      const nameInput = document.getElementById('name');
-      const textInput = document.getElementById('text');
-      const sendBtn = document.getElementById('send');
+      pwBtn.onclick = enterIfCorrect;
+      pwInput.onkeyup = e=>{ if(e.key==='Enter') enterIfCorrect(); };
 
-      // Echtzeit-Listener: letzte 100 Nachrichten, sortiert nach Zeit
-      db.collection('messages').orderBy('createdAt').limitToLast(100)
-        .onSnapshot(snapshot => {
+      function startChat(){
+        const messagesEl = document.getElementById('messages');
+        const nameInput = document.getElementById('name');
+        const textInput = document.getElementById('text');
+        const sendBtn = document.getElementById('send');
+
+        statusEl.textContent = 'Verbunden — lade Nachrichten...';
+
+        db.ref('messages').limitToLast(100).on('value', snap =>{
           messagesEl.innerHTML = '';
-          snapshot.forEach(doc => {
-            const d = doc.data();
+          const val = snap.val();
+          if(!val){
+            messagesEl.innerHTML = '<div class="muted">Noch keine Nachrichten.</div>';
+            statusEl.textContent = 'Bereit.';
+            return;
+          }
+          Object.values(val).forEach(d=>{
             const el = document.createElement('div');
             el.className = 'msg';
-            el.innerHTML = `<div class="bubble"><div class="meta"><strong>${escapeHtml(d.name||'Anonym')}</strong> • ${new Date(d.createdAt && d.createdAt.toDate ? d.createdAt.toDate() : d.createdAt).toLocaleString('de-DE')}</div><div style="margin-top:6px">${escapeHtml(d.text)}</div></div>`;
+            const time = new Date(d.createdAt || Date.now()).toLocaleString('de-DE');
+            el.innerHTML = `<div class="bubble"><div class="meta"><strong>${d.name||'Anonym'}</strong> • ${time}</div><div style="margin-top:6px">${d.text||''}</div></div>`;
             messagesEl.appendChild(el);
           });
           messagesEl.scrollTop = messagesEl.scrollHeight;
-        }, err => {
-          console.error('Listener error', err);
+          statusEl.textContent = 'Bereit.';
         });
 
-      sendBtn.addEventListener('click', sendMessage);
-      textInput.addEventListener('keyup', (e)=>{ if(e.key === 'Enter') sendMessage(); });
+        function sendMessage(){
+          const name = (nameInput.value||'Gast').trim();
+          const text = (textInput.value||'').trim();
+          if(!text) return;
+          const msg = { name, text, createdAt: Date.now() };
+          db.ref('messages').push(msg).then(()=>{ textInput.value=''; });
+        }
 
-      function sendMessage(){
-        const name = (nameInput.value||'Gast').trim().slice(0,30);
-        const text = (textInput.value||'').trim().slice(0,800);
-        if(!text) return;
-        sendBtn.disabled = true;
-        db.collection('messages').add({ name, text, createdAt: firebase.firestore.FieldValue.serverTimestamp() })
-          .then(()=>{ textInput.value = ''; sendBtn.disabled=false; })
-          .catch(err=>{ console.error(err); alert('Fehler beim Senden'); sendBtn.disabled=false; });
+        sendBtn.onclick = sendMessage;
+        textInput.onkeyup = e=>{ if(e.key==='Enter') sendMessage(); };
       }
-    }
-
-    // Kleiner Helfer: einfache HTML-Escaping
-    function escapeHtml(s){ if(!s) return ''; return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'); }
+    })();
   </script>
 </body>
 </html>
-
