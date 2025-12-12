@@ -1,1 +1,161 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SchulensteinChat</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#06b6d4;--muted:#9aa6b2;--bubble:#111827}
+    html,body{height:100%;margin:0;font-family:Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:linear-gradient(180deg,#071029 0%, #082034 100%);color:#e6eef6}
+    .container{max-width:900px;margin:32px auto;padding:20px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));border-radius:12px;padding:18px;box-shadow:0 8px 30px rgba(2,6,23,0.7)}
+    header{display:flex;align-items:center;gap:12px}
+    header h1{margin:0;font-size:1.4rem}
+    .muted{color:var(--muted);font-size:0.9rem}
+
+    /* login modal */
+    #pwModal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,0.6);z-index:50}
+    .pwBox{background:#061024;padding:28px;border-radius:10px;width:360px;box-shadow:0 10px 40px rgba(2,6,23,0.8)}
+    .pwBox input{width:100%;padding:10px;margin-top:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    .pwBox button{margin-top:12px;width:100%;padding:10px;border-radius:8px;border:0;background:var(--accent);color:#042028;font-weight:600}
+
+    /* chat */
+    .chatWrap{display:flex;flex-direction:column;height:70vh}
+    .messages{flex:1;overflow:auto;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02))}
+    .msg{margin-bottom:10px;display:flex;gap:10px}
+    .msg .meta{font-size:0.8rem;color:var(--muted)}
+    .bubble{background:var(--bubble);padding:10px;border-radius:10px;max-width:75%}
+    .controls{display:flex;gap:8px;margin-top:12px}
+    .controls input[type=text]{flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    .controls button{padding:10px 14px;border-radius:8px;border:0;background:var(--accent);color:#042028}
+
+    footer{margin-top:14px;font-size:0.85rem;color:var(--muted)}
+
+    @media (max-width:520px){.pwBox{width:92%}}
+  </style>
+</head>
+<body>
+  <div id="pwModal">
+    <div class="pwBox card">
+      <h2>SchulensteinChat</h2>
+      <p class="muted">Geben Sie das Zugriffskennwort ein, um die Seite zu betreten.</p>
+      <label for="pw">Zugangscode</label>
+      <input id="pw" type="password" placeholder="Passwort eingeben" autocomplete="off" />
+      <button id="pwBtn">Einloggen</button>
+      <p class="muted" style="font-size:0.8rem;margin-top:8px">Hinweis: Für Produktion sollten Sie serverseitige Authentifizierung verwenden.</p>
+    </div>
+  </div>
+
+  <div class="container card" id="app" style="display:none">
+    <header>
+      <div>
+        <h1>SchulensteinChat</h1>
+        <div class="muted">Einfacher Gruppenchat — Firebase benutzen</div>
+      </div>
+    </header>
+
+    <main class="chatWrap">
+      <div class="messages" id="messages"></div>
+
+      <div style="display:flex;gap:8px;align-items:center;margin-top:12px">
+        <input id="name" type="text" placeholder="Name (z. B. Max)" style="width:180px" />
+        <div style="flex:1">
+          <div class="controls">
+            <input id="text" type="text" placeholder="Nachricht schreiben..." />
+            <button id="send">Senden</button>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        Nachrichten werden in Firestore gespeichert. Für Produktion: Auth + Sicherheitsregeln konfigurieren.
+      </footer>
+    </main>
+  </div>
+
+  <!-- Firebase SDK - using compat build for simplicity. Ersetze die firebaseConfig-Variable weiter unten mit deinen Werten. -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
+  <script>
+    // === 1) Firebase-Konfiguration ===
+    // Ich habe die von dir bereitgestellten Werte hier eingefügt. Falls du lieber Platzhalter möchtest, sag Bescheid.
+    const firebaseConfig = {
+      apiKey: "AIzaSyDxr-d1ZKp3wt3i289o6FKmevr3s8Uw3WA",
+      authDomain: "okuler.firebaseapp.com",
+      databaseURL: "https://okuler-default-rtdb.firebaseio.com",
+      projectId: "okuler",
+      storageBucket: "okuler.firebasestorage.app",
+      messagingSenderId: "853942864718",
+      appId: "1:853942864718:web:337671e3596467ae7e6c1f",
+      measurementId: "G-2VTELY91G3"
+    };
+
+    // === 2) Initialisieren ===
+    // Wir nutzen hier die compat-SDK (eingebunden oben) so dass die einfache API wie vorher funktioniert.
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Passwort-Gate (Client-seitig). Gewünschtes Passwort: Hogachat
+    const SECRET = 'Hogachat';
+    const pwModal = document.getElementById('pwModal');
+    const app = document.getElementById('app');
+    const pwInput = document.getElementById('pw');
+    const pwBtn = document.getElementById('pwBtn');
+
+    function enterIfCorrect(){
+      const v = pwInput.value || '';
+      if(v === SECRET){
+        pwModal.style.display = 'none';
+        app.style.display = '';
+        startChat();
+      } else {
+        alert('Falsches Passwort.');
+      }
+    }
+    pwBtn.addEventListener('click', enterIfCorrect);
+    pwInput.addEventListener('keyup', (e)=>{ if(e.key === 'Enter') enterIfCorrect(); });
+
+    // Chat-Funktionen
+    function startChat(){
+      const messagesEl = document.getElementById('messages');
+      const nameInput = document.getElementById('name');
+      const textInput = document.getElementById('text');
+      const sendBtn = document.getElementById('send');
+
+      // Echtzeit-Listener: letzte 100 Nachrichten, sortiert nach Zeit
+      db.collection('messages').orderBy('createdAt').limitToLast(100)
+        .onSnapshot(snapshot => {
+          messagesEl.innerHTML = '';
+          snapshot.forEach(doc => {
+            const d = doc.data();
+            const el = document.createElement('div');
+            el.className = 'msg';
+            el.innerHTML = `<div class="bubble"><div class="meta"><strong>${escapeHtml(d.name||'Anonym')}</strong> • ${new Date(d.createdAt && d.createdAt.toDate ? d.createdAt.toDate() : d.createdAt).toLocaleString('de-DE')}</div><div style="margin-top:6px">${escapeHtml(d.text)}</div></div>`;
+            messagesEl.appendChild(el);
+          });
+          messagesEl.scrollTop = messagesEl.scrollHeight;
+        }, err => {
+          console.error('Listener error', err);
+        });
+
+      sendBtn.addEventListener('click', sendMessage);
+      textInput.addEventListener('keyup', (e)=>{ if(e.key === 'Enter') sendMessage(); });
+
+      function sendMessage(){
+        const name = (nameInput.value||'Gast').trim().slice(0,30);
+        const text = (textInput.value||'').trim().slice(0,800);
+        if(!text) return;
+        sendBtn.disabled = true;
+        db.collection('messages').add({ name, text, createdAt: firebase.firestore.FieldValue.serverTimestamp() })
+          .then(()=>{ textInput.value = ''; sendBtn.disabled=false; })
+          .catch(err=>{ console.error(err); alert('Fehler beim Senden'); sendBtn.disabled=false; });
+      }
+    }
+
+    // Kleiner Helfer: einfache HTML-Escaping
+    function escapeHtml(s){ if(!s) return ''; return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'); }
+  </script>
+</body>
+</html>
 
