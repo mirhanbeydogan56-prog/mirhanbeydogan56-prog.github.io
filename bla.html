@@ -52,7 +52,7 @@
     <header>
       <div>
         <h1>SchulensteinChat</h1>
-        <div class="muted">Einfacher Gruppenchat — Firebase benutzen</div>
+        <div class="muted">Einfacher Gruppenchat — Firebase Realtime Database</div>
       </div>
     </header>
 
@@ -72,17 +72,18 @@
       <div class="status" id="status">Verbindung prüfen...</div>
 
       <footer>
-        Nachrichten werden in Firestore gespeichert. Für Produktion: Auth + Sicherheitsregeln konfigurieren.
+        Nachrichten werden in der Realtime Database gespeichert. Für Produktion: Regeln + Auth konfigurieren.
       </footer>
     </main>
   </div>
 
-  <!-- Firebase compat SDK -->
+  <!-- Firebase compat SDKs (App + Realtime Database compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 
   <script>
     (function(){
+      // === Konfiguration (bereitgestellt) ===
       const firebaseConfig = {
         apiKey: "AIzaSyDxr-d1ZKp3wt3i289o6FKmevr3s8Uw3WA",
         authDomain: "okuler.firebaseapp.com",
@@ -94,8 +95,17 @@
         measurementId: "G-2VTELY91G3"
       };
 
-      if(!firebase.apps.length){ firebase.initializeApp(firebaseConfig); }
+      // === Init (compat) ===
+      try{
+        if(typeof firebase === 'undefined') throw new Error('Firebase SDK nicht geladen. Prüfe die Script-Tags.');
+        if(!firebase.apps || !firebase.apps.length) firebase.initializeApp(firebaseConfig);
+      }catch(e){
+        console.error('Firebase init error', e);
+        document.getElementById('status').textContent = 'Firebase-Initialisierung fehlgeschlagen. Siehe Konsole.';
+        return;
+      }
 
+      // Use Realtime Database (compat) — firebase.database() is provided by firebase-database-compat.js
       const db = firebase.database();
 
       const SECRET = 'Hogachat';
@@ -106,15 +116,17 @@
       const statusEl = document.getElementById('status');
 
       function enterIfCorrect(){
-        if(pwInput.value === SECRET){
+        const v = (pwInput.value||'').trim();
+        if(v === SECRET){
           pwModal.style.display = 'none';
           app.style.display = '';
           startChat();
-        } else alert('Falsches Passwort.');
+        } else {
+          alert('Falsches Passwort.');
+        }
       }
-
-      pwBtn.onclick = enterIfCorrect;
-      pwInput.onkeyup = e=>{ if(e.key==='Enter') enterIfCorrect(); };
+      pwBtn.addEventListener('click', enterIfCorrect);
+      pwInput.addEventListener('keyup', (e)=>{ if(e.key === 'Enter') enterIfCorrect(); });
 
       function startChat(){
         const messagesEl = document.getElementById('messages');
@@ -124,7 +136,10 @@
 
         statusEl.textContent = 'Verbunden — lade Nachrichten...';
 
-        db.ref('messages').limitToLast(100).on('value', snap =>{
+        // Realtime DB listener: last 100 messages
+        const ref = db.ref('messages').limitToLast(100);
+        ref.off();
+        ref.on('value', snap => {
           messagesEl.innerHTML = '';
           const val = snap.val();
           if(!val){
@@ -132,29 +147,63 @@
             statusEl.textContent = 'Bereit.';
             return;
           }
-          Object.values(val).forEach(d=>{
-            const el = document.createElement('div');
-            el.className = 'msg';
-            const time = new Date(d.createdAt || Date.now()).toLocaleString('de-DE');
-            el.innerHTML = `<div class="bubble"><div class="meta"><strong>${d.name||'Anonym'}</strong> • ${time}</div><div style="margin-top:6px">${d.text||''}</div></div>`;
-            messagesEl.appendChild(el);
+
+          // push sıralaması server timestamp olmadığı için client tarafında yapılır
+          const items = Object.entries(val).sort((a,b)=> (a[1].createdAt||0) - (b[1].createdAt||0));
+          items.forEach(([key, d]) => {
+            try{
+              const el = document.createElement('div');
+              el.className = 'msg';
+              const time = new Date(d.createdAt || Date.now()).toLocaleString('de-DE');
+              const name = escapeHtml(d.name || 'Anonym');
+              const text = escapeHtml(d.text || '');
+              el.innerHTML = `<div class="bubble"><div class="meta"><strong>${name}</strong> • ${time}</div><div style="margin-top:6px">${text}</div></div>`;
+              messagesEl.appendChild(el);
+            }catch(e){ console.error('Render error', e); }
           });
+
           messagesEl.scrollTop = messagesEl.scrollHeight;
           statusEl.textContent = 'Bereit.';
+        }, err => {
+          console.error('RTDB listener error', err);
+          statusEl.textContent = 'Fehler beim Laden der Nachrichten. Siehe Konsole.';
         });
 
-        function sendMessage(){
-          const name = (nameInput.value||'Gast').trim();
-          const text = (textInput.value||'').trim();
-          if(!text) return;
-          const msg = { name, text, createdAt: Date.now() };
-          db.ref('messages').push(msg).then(()=>{ textInput.value=''; });
-        }
+        // send
+        sendBtn.addEventListener('click', sendMessage);
+        textInput.addEventListener('keyup', (e)=>{ if(e.key === 'Enter') sendMessage(); });
 
-        sendBtn.onclick = sendMessage;
-        textInput.onkeyup = e=>{ if(e.key==='Enter') sendMessage(); };
+        function sendMessage(){
+          const name = (nameInput.value||'Gast').trim().slice(0,40);
+          const text = (textInput.value||'').trim().slice(0,1000);
+          if(!text) return;
+
+          const msg = { name, text, createdAt: Date.now() };
+
+          // push with simple error handling
+          db.ref('messages').push(msg, err => {
+            if(err){
+              console.error('Push error', err);
+              alert('Fehler beim Senden der Nachricht. Siehe Konsole.');
+            } else {
+              textInput.value = '';
+            }
+          });
+        }
       }
+
+      function escapeHtml(s){ if(!s) return ''; return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;'); }
+
+      // Quick connectivity test: try a small read (non-destructive)
+      db.ref('messages').limitToLast(1).once('value').then(()=>{
+        document.getElementById('status').textContent = 'Realtime Database erreichbar.';
+      }).catch(err=>{
+        console.warn('RTDB quick read failed', err);
+        document.getElementById('status').textContent = 'RTDB nicht erreichbar oder Regeln verhindern Zugriff. Siehe Konsole.';
+      });
+
     })();
   </script>
 </body>
 </html>
+
