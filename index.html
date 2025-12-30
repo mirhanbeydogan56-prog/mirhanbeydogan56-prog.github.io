@@ -1,306 +1,176 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Senin İçin Sevgilim</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalp</title>
 
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: #111;    
-            color: #fff;
-            font-family: "Arial", sans-serif;
-            text-align: center;
-            line-height: 1.7;
-            overflow-x: hidden;
-        } 
-        
-        /* ŞİFRE EKRANI */
-        #passwordScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            z-index: 9999;
-        }
+<style>
+*{box-sizing:border-box}
+body{
+    margin:0;
+    background:#0a0a0a;
+    overflow:hidden;
+    font-family:Arial, sans-serif;
+}
 
-        #passwordScreen input {
-            padding: 12px 18px;
-            font-size: 18px;
-            border-radius: 8px;
-            border: none;
-            outline: none;
-            margin-bottom: 12px;
-            text-align: center;
-        }
+/* 🔐 ŞİFRE */
+#passwordScreen{
+    position:fixed;
+    inset:0;
+    background:#000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    z-index:9999;
+    color:#fff;
+}
+#passwordScreen input{
+    padding:12px;
+    font-size:18px;
+    border-radius:8px;
+    border:none;
+    margin-bottom:10px;
+}
+#passwordScreen button{
+    padding:10px 20px;
+    font-size:18px;
+    border-radius:8px;
+    border:none;
+    cursor:pointer;
+    background:#ffcc00;
+}
 
-        #passwordScreen button {
-            padding: 10px 20px;
-            font-size: 18px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            background: #ffcc00;
-        }
+/* 📱 ORTA ALAN */
+.center{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
 
-        /* BAŞLIK */
-        h1 {
-            margin-top: 40px;
-            font-size: 36px;
-            font-weight: bold;
-        }
+/* ❤️ NABIZ ATAN KALP */
+.heart{
+    width:260px;
+    height:230px;
+    background:#ff2f6d;
+    clip-path:path("M130 230 C-30 120 40 -30 130 60 C220 -30 290 120 130 230 Z");
+    position:relative;
+    overflow:hidden;
+    animation:beat 1.2s infinite;
+    box-shadow:0 0 40px rgba(255,80,130,0.7);
+}
 
-        .poem {
-            margin: 30px auto;
-            padding: 20px;
-            max-width: 900px;
-            font-size: 20px;
-            background: #1a1a1a;
-            border-radius: 12px;
-        }
+@keyframes beat{
+    0%{transform:scale(1)}
+    20%{transform:scale(1.08)}
+    40%{transform:scale(1)}
+    60%{transform:scale(1.05)}
+    100%{transform:scale(1)}
+}
 
-        /* NERGİS BUTONU */
-        #flowerBtn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #ffd700;
-            border: none;
-            padding: 12px 20px;
-            font-size: 18px;
-            border-radius: 10px;
-            cursor: pointer;
-            z-index: 50;
-            font-weight: bold;
-        }
+/* ✨ KALP İÇİ PARILAYAN KALPLER */
+.spark{
+    position:absolute;
+    color:#fff;
+    opacity:.9;
+    animation:fall linear infinite, glow 2s ease-in-out infinite;
+}
 
-        /* KİTAP BUTONU */
-        #bookBtn {
-            position: fixed;
-            top: 70px;
-            right: 20px;
-            background: #8fd3ff;
-            border: none;
-            padding: 10px 15px;
-            font-size: 18px;
-            border-radius: 10px;
-            cursor: pointer;
-            z-index: 50;
-            font-weight: bold;
-        } 
+@keyframes fall{
+    from{transform:translateY(-20px)}
+    to{transform:translateY(260px)}
+}
+@keyframes glow{
+    0%,100%{filter:drop-shadow(0 0 4px #fff)}
+    50%{filter:drop-shadow(0 0 10px #ff9acb)}
+}
 
-        /* ONLINE BUTONU */
-        #dailyBtn {
-            position: fixed;
-            top: 120px; 
-            right: 20px;
-            background: #ff8ba7;
-            border: none;
-            padding: 10px 15px;
-            font-size: 18px;
-            border-radius: 10px;
-            cursor: pointer;
-            z-index: 50;
-            font-weight: bold;
-        }
+/* ❄️ KAR */
+.snow{
+    position:fixed;
+    top:-10px;
+    color:#fff;
+    opacity:.7;
+    animation:snowfall linear infinite;
+}
+@keyframes snowfall{
+    from{transform:translateY(-10px)}
+    to{transform:translateY(110vh)}
+}
 
-        /* ERTE BUTONU */
-        #erteBtn {
-            position: fixed;
-            top: 170px; 
-            right: 20px;
-            background: #c29bff;
-            border: none;
-            padding: 10px 15px;
-            font-size: 18px;
-            border-radius: 10px;
-            cursor: pointer;
-            z-index: 50;
-            font-weight: bold;
-        }
+/* 🔘 BUTONLAR (AYNI) */
+button{font-weight:bold}
+#flowerBtn{position:fixed;top:20px;right:20px;background:#ffd700;border:none;padding:12px 20px;font-size:18px;border-radius:10px;cursor:pointer;z-index:50;}
+#bookBtn{position:fixed;top:70px;right:20px;background:#8fd3ff;border:none;padding:10px 15px;font-size:18px;border-radius:10px;cursor:pointer;z-index:50;}
+#dailyBtn{position:fixed;top:120px;right:20px;background:#ff8ba7;border:none;padding:10px 15px;font-size:18px;border-radius:10px;cursor:pointer;z-index:50;}
+#erteBtn{position:fixed;top:170px;right:20px;background:#c29bff;border:none;padding:10px 15px;font-size:18px;border-radius:10px;cursor:pointer;z-index:50;}
+#chatBtn{position:fixed;top:220px;right:20px;background:#7df7c2;border:none;padding:10px 15px;font-size:18px;border-radius:10px;cursor:pointer;z-index:50;}
+#durumBtn{position:fixed;top:270px;right:20px;background:#9bb8ff;border:none;padding:10px 15px;font-size:18px;border-radius:10px;cursor:pointer;z-index:50;}
+#camBtn{position:fixed;top:320px;right:20px;background:#b2f1f1;border:none;padding:10px 15px;font-size:18px;border-radius:10px;cursor:pointer;z-index:50;}
 
-        /* CHAT BUTONU */
-        #chatBtn {
-            position: fixed;
-            top: 220px; 
-            right: 20px;
-            background: #7df7c2;
-            border: none;
-            padding: 10px 15px;
-            font-size: 18px;
-            border-radius: 10px;
-            cursor: pointer;
-            z-index: 50;
-            font-weight: bold;
-        }
-
-        /* DURUM BUTONU */
-        #durumBtn {
-            position: fixed;
-            top: 270px; 
-            right: 20px;
-            background: #9bb8ff;
-            border: none;
-            padding: 10px 15px;
-            font-size: 18px;
-            border-radius: 10px;
-            cursor: pointer;
-            z-index: 50;
-            font-weight: bold;
-        }
-
-        /* CAM BUTONU (Yeni) */
-        #camBtn {
-            position: fixed;
-            top: 320px; 
-            right: 20px;
-            background: #b2f1f1;
-            border: none;
-            padding: 10px 15px;
-            font-size: 18px;
-            border-radius: 10px;
-            cursor: pointer;
-            z-index: 50;
-            font-weight: bold;
-        }
-
-        /* ÇİÇEK ANİMASYONU */
-        .flower {
-            position: fixed;
-            top: -50px;
-            font-size: 32px;
-            animation: fall linear infinite;
-        }
-
-        @keyframes fall {
-            0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
-        }
-
-        .love-languages {
-            margin-top: 40px;
-            font-size: 22px;
-            opacity: 0.95;
-        }
-    </style>
+/* 📱 MOBİL */
+@media(max-width:600px){
+    .heart{width:200px;height:180px}
+}
+</style>
 </head>
+
 <body>
 
-<!-- 🟡 ŞİFRE EKRANI -->
 <div id="passwordScreen">
-    <h2>Giriş için şifre gerekli</h2>
-    <input type="password" id="passwordInput" placeholder="Şifreyi gir...">
-    <button onclick="checkPassword()">Giriş Yap</button>
+<h2>Giriş için şifre gerekli</h2>
+<input type="password" id="passwordInput">
+<button onclick="checkPassword()">Giriş</button>
 </div>
 
-<!-- 🌼 NERGİS BUTONU -->
-<button id="flowerBtn" onclick="toggleFlowers()">🌼 cicek Uçur</button>
+<!-- BUTONLAR -->
+<button id="flowerBtn">🌼</button>
+<button id="bookBtn" onclick="location.href='book.html'">sayac</button>
+<button id="dailyBtn" onclick="location.href='daily.html'">online</button>
+<button id="erteBtn" onclick="location.href='erte.html'">snake</button>
+<button id="chatBtn" onclick="location.href='chat.html'">chat</button>
+<button id="durumBtn" onclick="location.href='durum.html'">dc</button>
+<button id="camBtn" onclick="location.href='bla.html'">cam</button>
 
-<!-- 📖 BOOK BUTONU -->
-<button id="bookBtn" onclick="window.location.href='book.html'">sayac</button>
-
-<!-- 📘 GÜNLÜK BUTONU -->
-<button id="dailyBtn" onclick="window.location.href='daily.html'">online</button>
-
-<!-- 🟣 ERTE BUTONU -->
-<button id="erteBtn" onclick="window.location.href='erte.html'">SNAKE</button>
-
-<!-- 💬 CHAT BUTONU -->
-<button id="chatBtn" onclick="window.location.href='chat.html'">chat</button>
-
-<!-- 💙 DURUM BUTONU -->
-<button id="durumBtn" onclick="window.location.href='durum.html'">DC</button>
-
-<!-- 💎 CAM BUTONU (Yeni) -->
-<button id="camBtn" onclick="window.location.href='bla.html'">cam</button>
-
-
-<h1>Senin İçin Sevgilim</h1>
-
-<div class="poem">
-    <p>
-        Bir yaz akşamı, saatlerin susup dinlendiği yerde —<br><br>
-        19 Ağustos 2025 geldiğinde dünya bir an durdu;<br>
-        Gözlerinle buluştuğum o ilk an, içimde bir şarkı çalmaya başladı.<br><br>
-        Ertesi gün, 20 Ağustos 2025’e dönerken zaman daha yakın, daha sıcak oldu;<br>
-        İki gün, iki nefes, ve kalbim seninle verdi ilk gerçek sözünü.<br><br>
-        Esma, adın dudaklarımda bir huzur, gülüşünse sabahın aydınlığı;<br>
-        Seninle her basit an bile bir şiire dönüşür, sıradan sokaklar bile şiir okur.<br><br>
-        İyi ki geldin; iyi ki rastladım sana, iyi ki ellerimiz kavuştu—<br>
-        Şimdi her gün, o iki günün tekrarı gibi; taze, heyecanlı ve gerçek.<br><br>
-        Bu satırlar küçük bir hediye, ama bil ki seni tarif etmeye yetmez—<br>
-        Çünkü sen, Esma, her mısrada saklı bir umut, her nefeste bir evsin.
-    </p>
-</div>
-
-<!-- ❤️ 50 DİLDE “Seni Seviyorum Esma” -->
-<div class="love-languages">
-    <p>
-        Seni seviyorum Esma • I love you Esma • Ich liebe dich Esma • Je t'aime Esma •  
-        Ti amo Esma • Te amo Esma • Eu te amo Esma • Ya tebya lyublyu Esma •  
-        Aishiteru Esma • Wo ai ni Esma • Saranghae Esma • Seni sevirem Esma •  
-        Kocham cię Esma • Jeg elsker deg Esma • Ik hou van je Esma •  
-        Saya cinta kamu Esma • Mahal kita Esma • Phom rak khun Esma •  
-        Ana uhibbuki Esma • Mi amas vin Esma • Volim te Esma • Milujem ťa Esma •  
-        Ljubim te Esma • Obicham te Esma • Mina rakastan sinua Esma •  
-        Ek het jou lief Esma • Jeg elsker deg Esma • Ég elska þig Esma •  
-        T'estimo Esma • Lubim tě Esma • Ninapenda wewe Esma •  
-        Te iubesc Esma • Tave myliu Esma • Ma armastan sind Esma •  
-        Amo-te Esma • Ya lyublyu tebya Esma • Seni seviyorum Esma 💛
-    </p>
+<!-- ❤️ MERKEZ -->
+<div class="center">
+    <div class="heart" id="heart"></div>
 </div>
 
 <script>
-    // ŞİFRE KONTROL
-    function checkPassword() {
-        const input = document.getElementById("passwordInput").value;
+function checkPassword(){
+    if(passwordInput.value==="esma5685"){
+        passwordScreen.style.display="none";
+    }else alert("Şifre yanlış ❤️");
+}
 
-        if (input === "esma5685") {
-            document.getElementById("passwordScreen").style.display = "none";
-        } else {
-            alert("Şifre yanlış, tekrar dene ❤️");
-        }
-    }
+/* 💖 KALP İÇİ */
+const heart=document.getElementById("heart");
+setInterval(()=>{
+    const s=document.createElement("div");
+    s.className="spark";
+    s.innerHTML="❤️";
+    s.style.left=Math.random()*100+"%";
+    s.style.fontSize=(Math.random()*10+10)+"px";
+    s.style.animationDuration=(Math.random()*2+3)+"s";
+    heart.appendChild(s);
+    setTimeout(()=>s.remove(),5000);
+},150);
 
-    // NERGİS UÇUŞ SİSTEMİ
-    let flowersActive = false;
-    let flowerInterval;
-
-    function toggleFlowers() {
-        flowersActive = !flowersActive;
-
-        if (flowersActive) {
-            flowerInterval = setInterval(makeFlower, 200);
-            document.getElementById("flowerBtn").textContent = "🌼 Durdur";
-        } else {
-            clearInterval(flowerInterval);
-            document.getElementById("flowerBtn").textContent = "🌼 Uçur";
-        }
-    }
-
-    function makeFlower() {
-        let flower = document.createElement("div");
-        flower.classList.add("flower");
-        flower.innerHTML = "🌼";
-
-        let size = Math.random() * 20 + 20;
-        flower.style.fontSize = size + "px";
-
-        flower.style.left = Math.random() * 100 + "vw";
-        flower.style.animationDuration = (Math.random() * 3 + 3) + "s";
-
-        document.body.appendChild(flower);
-
-        setTimeout(() => flower.remove(), 6000);
-    }
+/* ❄️ KAR */
+setInterval(()=>{
+    const snow=document.createElement("div");
+    snow.className="snow";
+    snow.innerHTML="❄️";
+    snow.style.left=Math.random()*100+"vw";
+    snow.style.fontSize=(Math.random()*10+10)+"px";
+    snow.style.animationDuration=(Math.random()*5+5)+"s";
+    document.body.appendChild(snow);
+    setTimeout(()=>snow.remove(),10000);
+},300);
 </script>
 
 </body>
