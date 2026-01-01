@@ -1,1 +1,45 @@
 
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Bizim Ağacımız 🌸</title>
+<style>
+  body { text-align: center; font-family: sans-serif; background: #f0f8ff; }
+  h1 { margin-top: 20px; }
+  #tree { position: relative; width: 200px; height: 400px; margin: 50px auto; background: #8b4513; border-radius: 100px 100px 0 0; }
+  .flower {
+    width: 20px; height: 20px; border-radius: 50%; background: pink; position: absolute; opacity: 0; transition: opacity 1s;
+  }
+</style>
+</head>
+<body>
+<h1>Bizim Ağacımız 🌸</h1>
+<div id="tree"></div>
+
+<script>
+const tree = document.getElementById('tree');
+const totalDays = 134; // ilişkinizin gün sayısı
+const startDate = new Date();
+startDate.setDate(startDate.getDate() - totalDays);
+
+// Rastgele çiçek noktaları
+let flowers = [];
+for(let i=0; i<totalDays; i++){
+    let f = document.createElement('div');
+    f.classList.add('flower');
+    f.style.top = Math.random()*350 + 'px';
+    f.style.left = Math.random()*180 + 'px';
+    tree.appendChild(f);
+    flowers.push(f);
+}
+
+// Bugüne kadar açmış çiçekleri göster
+const today = new Date();
+const daysPassed = Math.floor((today - startDate)/ (1000*60*60*24));
+for(let i=0; i<daysPassed; i++){
+    if(flowers[i]) flowers[i].style.opacity = 1;
+}
+</script>
+</body>
+</html>
