@@ -27,6 +27,24 @@
     height: 100%;
   }
 
+  /* Kalp şeklinde yeşil tepe */
+  #tree-container::before {
+    content: "";
+    position: absolute;
+    top: 50px;
+    left: 50px;
+    width: 300px;
+    height: 200px;
+    background-color: green;
+    clip-path: polygon(
+      50% 0%, 61% 10%, 75% 25%, 80% 40%,
+      75% 55%, 60% 70%, 50% 85%, 40% 70%,
+      25% 55%, 20% 40%, 25% 25%, 39% 10%
+    );
+    opacity: 0.5;
+    z-index: 0;
+  }
+
   .flower {
     width: 12px;
     height: 12px;
@@ -39,6 +57,7 @@
     );
     opacity: 0;
     transition: opacity 0.5s;
+    z-index: 1; /* Çiçekler yeşilin üstünde */
   }
 </style>
 </head>
@@ -69,14 +88,12 @@ dayCountEl.textContent = daysPassed;
 
 // Çiçekleri kalp şeklinde dağıtmak için koordinat üret
 const flowerPositions = [];
-const width = 400, height = 300;
+const width = 300, height = 200; // kalp alanı boyutu
 
 function isInsideHeart(x, y) {
-    // normalize x ve y
     let nx = (x - width/2) / 100;
     let ny = (y - height/2) / 100;
-    let val = Math.pow(nx*nx + ny*ny -1,3) - nx*nx*ny*ny*ny;
-    return val <= 0;
+    return Math.pow(nx*nx + ny*ny -1,3) - nx*nx*ny*ny*ny <= 0;
 }
 
 // rastgele kalp içinde pozisyon üret
@@ -84,7 +101,7 @@ while(flowerPositions.length < totalDays) {
     let x = Math.random()*width;
     let y = Math.random()*height;
     if(isInsideHeart(x, y)) {
-        flowerPositions.push({x, y});
+        flowerPositions.push({x: x + 50, y: y + 50}); // ::before offset
     }
 }
 
