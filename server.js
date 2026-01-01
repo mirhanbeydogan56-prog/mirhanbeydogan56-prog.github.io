@@ -1,35 +1,21 @@
-const WebSocket = require("ws");
-const wss = new WebSocket.Server({ port: 3000 });
+const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
 
-let rooms = {};
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
-wss.on("connection", (ws) => {
-  ws.on("message", (msg) => {
-    const data = JSON.parse(msg);
-    const { type, room, payload } = data;
+app.use(express.static("public"));
 
-    if (type === "join") {
-      if (!rooms[room]) rooms[room] = [];
-      rooms[room].push(ws);
-      ws.room = room;
-
-      rooms[room].forEach(c => {
-        if (c !== ws) c.send(JSON.stringify({ type: "new-peer" }));
-      });
-    }
-
-    if (type === "signal") {
-      rooms[room].forEach(c => {
-        if (c !== ws) c.send(JSON.stringify({ type: "signal", payload }));
-      });
-    }
+io.on("connection", socket => {
+  socket.on("join", room => {
+    socket.join(room);
   });
 
-  ws.on("close", () => {
-    if (ws.room && rooms[ws.room]) {
-      rooms[ws.room] = rooms[ws.room].filter(c => c !== ws);
-    }
+  socket.on("move", data => {
+    socket.to(data.room).emit("update", data);
   });
 });
 
-console.log("WebSocket Signaling Server running on ws://localhost:3000");
+server.listen(3000, ()=>console.log("Server çalışıyor"));
