@@ -3,43 +3,67 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Bizim Ağacımız 🌸</title>
+<title>Bizim Kalp Ağacımız 🌸</title>
 <style>
   body {
     text-align: center;
     font-family: sans-serif;
-    background: #e6f7ff;
+    background: #fff0f5;
   }
-  h1 { margin-top: 20px; }
-  #tree {
-    width: 300px;
-    height: 400px;
-    margin: 20px auto;
+
+  h1 {
+    margin-top: 20px;
+    color: #d6336c;
+  }
+
+  #tree-container {
     position: relative;
-    background: url('https://i.imgur.com/fakeTree.png') no-repeat center bottom;
-    background-size: contain;
+    width: 400px;
+    height: 500px;
+    margin: 20px auto;
   }
+
+  /* SVG boyutu %100 olacak */
+  #tree-svg {
+    width: 100%;
+    height: 100%;
+  }
+
   .flower {
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    background: pink;
+    width: 12px;
+    height: 12px;
     position: absolute;
+    background-color: pink;
+    clip-path: polygon(
+      50% 0%, 61% 10%, 75% 25%, 80% 40%,
+      75% 55%, 60% 70%, 50% 85%, 40% 70%,
+      25% 55%, 20% 40%, 25% 25%, 39% 10%
+    );
     opacity: 0;
     transition: opacity 1s;
   }
 </style>
 </head>
 <body>
-<h1>Bizim Ağacımız 🌸</h1>
+<h1>Bizim Kalp Ağacımız 🌸</h1>
 <p>Gün: <span id="dayCount"></span></p>
 
-<div id="tree"></div>
+<div id="tree-container">
+  <!-- Canva’dan aldığın SVG buraya yapıştır -->
+  <svg id="tree-svg" viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
+    <!-- Örnek ağaç SVG -->
+    <path d="M200 500 C200 400, 150 350, 200 300 C250 350, 200 400, 200 500 Z" fill="#8b4513"/>
+    <circle cx="200" cy="250" r="80" fill="#228B22"/>
+    <circle cx="150" cy="200" r="60" fill="#228B22"/>
+    <circle cx="250" cy="200" r="60" fill="#228B22"/>
+  </svg>
+</div>
 
 <script>
-const tree = document.getElementById('tree');
+const treeContainer = document.getElementById('tree-container');
 const dayCountEl = document.getElementById('dayCount');
 
-const totalDays = 134; // İlişkinizin başladığı gün sayısı
+const totalDays = 134; // İlişkinizin günü
 const startDate = new Date();
 startDate.setDate(startDate.getDate() - totalDays); // 134 gün önce başlat
 
@@ -50,22 +74,26 @@ if(daysPassed > totalDays) daysPassed = totalDays;
 
 dayCountEl.textContent = daysPassed;
 
-// Çiçekleri otomatik oluştur
+// Çiçekleri kalp şeklinde yerleştirme
+const flowerPositions = [];
+const width = 400, height = 250; // SVG koordinatlarıyla uyumlu
+
 for(let i=0; i<totalDays; i++){
-  const f = document.createElement('div');
-  f.classList.add('flower');
-  
-  // Rastgele ağaçta pozisyon
-  f.style.top = Math.random() * 300 + 'px';
-  f.style.left = Math.random() * 260 + 'px';
-  
-  // Eğer bugüne kadar açmış gün sayısına dahilse göster
-  if(i < daysPassed){
-    f.style.opacity = 1;
-  }
-  
-  tree.appendChild(f);
+    const t = i / totalDays;
+    const x = width/2 + 100 * (16*Math.pow(Math.sin(Math.PI*t),3) - 8);
+    const y = height - (100 * (13*Math.cos(Math.PI*t)-5*Math.cos(2*Math.PI*t)-2*Math.cos(3*Math.PI*t)-Math.cos(4*Math.PI*t)));
+    flowerPositions.push({x: Math.random()*60-30 + width/2, y: y + Math.random()*20});
 }
+
+// Çiçekleri DOM'a ekle
+flowerPositions.forEach((pos, index)=>{
+    const f = document.createElement('div');
+    f.classList.add('flower');
+    f.style.left = pos.x + 'px';
+    f.style.top = pos.y + 'px';
+    if(index < daysPassed) f.style.opacity = 1;
+    treeContainer.appendChild(f);
+});
 </script>
 </body>
 </html>
