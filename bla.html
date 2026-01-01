@@ -1,119 +1,50 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<title>Bizim Kalp Ağacımız 🌸</title>
-<style>
-  body {
-    text-align: center;
-    font-family: sans-serif;
-    background: #fff0f5;
-  }
+  <meta charset="UTF-8">
+  <title>Kalp Animasyonu</title>
+  <style>
+    .heart {
+      fill: red;
+      position: relative;
+      top: 5px;
+      width: 50px;
+      height: 50px;
+      background: red;
+      transform: rotate(-45deg);
+      animation: pulse 1s ease infinite;
+    }
 
-  h1 {
-    margin-top: 20px;
-    color: #d6336c;
-  }
+    .heart::before,
+    .heart::after {
+      content: "";
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background: red;
+      border-radius: 50%;
+    }
 
-  #tree-container {
-    position: relative;
-    width: 400px;
-    height: 400px;
-    margin: 20px auto;
-  }
+    .heart::before {
+      top: -25px;
+      left: 0;
+    }
 
-  #tree-svg {
-    width: 100%;
-    height: 100%;
-  }
+    .heart::after {
+      left: 25px;
+      top: 0;
+    }
 
-  /* Kalp şeklinde yeşil tepe */
-  #tree-container::before {
-    content: "";
-    position: absolute;
-    top: 50px;
-    left: 50px;
-    width: 300px;
-    height: 200px;
-    background-color: green;
-    clip-path: polygon(
-      50% 0%, 61% 10%, 75% 25%, 80% 40%,
-      75% 55%, 60% 70%, 50% 85%, 40% 70%,
-      25% 55%, 20% 40%, 25% 25%, 39% 10%
-    );
-    opacity: 0.5;
-    z-index: 0;
-  }
-
-  .flower {
-    width: 12px;
-    height: 12px;
-    position: absolute;
-    background-color: pink;
-    clip-path: polygon(
-      50% 0%, 61% 10%, 75% 25%, 80% 40%,
-      75% 55%, 60% 70%, 50% 85%, 40% 70%,
-      25% 55%, 20% 40%, 25% 25%, 39% 10%
-    );
-    opacity: 0;
-    transition: opacity 0.5s;
-    z-index: 1; /* Çiçekler yeşilin üstünde */
-  }
-</style>
+    @keyframes pulse {
+      0%   { transform: rotate(-45deg) scale(1); }
+      50%  { transform: rotate(-45deg) scale(1.3); }
+      100% { transform: rotate(-45deg) scale(1); }
+    }
+  </style>
 </head>
 <body>
-<h1>Bizim Kalp Ağacımız 🌸</h1>
-<p>Gün: <span id="dayCount"></span></p>
 
-<div id="tree-container">
-  <svg id="tree-svg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-    <!-- Gövde -->
-    <rect x="190" y="300" width="20" height="100" fill="#8b4513" rx="10"/>
-  </svg>
-</div>
+  <div class="heart"></div>
 
-<script>
-const treeContainer = document.getElementById('tree-container');
-const dayCountEl = document.getElementById('dayCount');
-
-const totalDays = 134; // İlişkinizin günü
-const startDate = new Date();
-startDate.setDate(startDate.getDate() - totalDays);
-
-const today = new Date();
-let daysPassed = Math.floor((today - startDate)/(1000*60*60*24));
-if(daysPassed > totalDays) daysPassed = totalDays;
-
-dayCountEl.textContent = daysPassed;
-
-// Çiçekleri kalp şeklinde dağıtmak için koordinat üret
-const flowerPositions = [];
-const width = 300, height = 200; // kalp alanı boyutu
-
-function isInsideHeart(x, y) {
-    let nx = (x - width/2) / 100;
-    let ny = (y - height/2) / 100;
-    return Math.pow(nx*nx + ny*ny -1,3) - nx*nx*ny*ny*ny <= 0;
-}
-
-// rastgele kalp içinde pozisyon üret
-while(flowerPositions.length < totalDays) {
-    let x = Math.random()*width;
-    let y = Math.random()*height;
-    if(isInsideHeart(x, y)) {
-        flowerPositions.push({x: x + 50, y: y + 50}); // ::before offset
-    }
-}
-
-// Çiçekleri DOM'a ekle
-flowerPositions.forEach((pos, index)=>{
-    const f = document.createElement('div');
-    f.classList.add('flower');
-    f.style.left = pos.x + 'px';
-    f.style.top = pos.y + 'px';
-    if(index < daysPassed) f.style.opacity = 1;
-    treeContainer.appendChild(f);
-});
-</script>
 </body>
 </html>
