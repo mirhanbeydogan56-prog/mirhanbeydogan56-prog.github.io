@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -19,7 +18,7 @@
   #tree-container {
     position: relative;
     width: 400px;
-    height: 500px;
+    height: 400px;
     margin: 20px auto;
   }
 
@@ -49,13 +48,11 @@
 <p>Gün: <span id="dayCount"></span></p>
 
 <div id="tree-container">
-  <!-- Canva’dan aldığın SVG buraya yapıştır -->
-  <svg id="tree-svg" viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
-    <!-- Örnek ağaç SVG -->
-    <path d="M200 500 C200 400, 150 350, 200 300 C250 350, 200 400, 200 500 Z" fill="#8b4513"/>
-    <circle cx="200" cy="250" r="80" fill="#228B22"/>
-    <circle cx="150" cy="200" r="60" fill="#228B22"/>
-    <circle cx="250" cy="200" r="60" fill="#228B22"/>
+  <!-- Kalp şeklinde ağaç -->
+  <svg id="tree-svg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+    <!-- Gövde -->
+    <rect x="190" y="300" width="20" height="100" fill="#8b4513" rx="10"/>
+    <!-- Yapraklar boş çünkü çiçekler JS ile ekleniyor -->
   </svg>
 </div>
 
@@ -65,24 +62,24 @@ const dayCountEl = document.getElementById('dayCount');
 
 const totalDays = 134; // İlişkinizin günü
 const startDate = new Date();
-startDate.setDate(startDate.getDate() - totalDays); // 134 gün önce başlat
+startDate.setDate(startDate.getDate() - totalDays);
 
-// Bugüne kadar kaç gün geçti
 const today = new Date();
 let daysPassed = Math.floor((today - startDate)/(1000*60*60*24));
 if(daysPassed > totalDays) daysPassed = totalDays;
 
 dayCountEl.textContent = daysPassed;
 
-// Çiçekleri kalp şeklinde yerleştirme
+// Kalp şeklinde çiçek konumları
 const flowerPositions = [];
-const width = 400, height = 250; // SVG koordinatlarıyla uyumlu
+const width = 400, height = 300; // Kalp koordinatları
 
 for(let i=0; i<totalDays; i++){
-    const t = i / totalDays;
-    const x = width/2 + 100 * (16*Math.pow(Math.sin(Math.PI*t),3) - 8);
-    const y = height - (100 * (13*Math.cos(Math.PI*t)-5*Math.cos(2*Math.PI*t)-2*Math.cos(3*Math.PI*t)-Math.cos(4*Math.PI*t)));
-    flowerPositions.push({x: Math.random()*60-30 + width/2, y: y + Math.random()*20});
+    const t = Math.random(); // 0-1 arası rastgele
+    // Kalp denklemi parametre t
+    const x = width/2 + 100 * (16*Math.pow(Math.sin(Math.PI*t),3));
+    const y = 150 - (100 * (13*Math.cos(Math.PI*t)-5*Math.cos(2*Math.PI*t)-2*Math.cos(3*Math.PI*t)-Math.cos(4*Math.PI*t)));
+    flowerPositions.push({x: x + Math.random()*20-10, y: y + Math.random()*20-10});
 }
 
 // Çiçekleri DOM'a ekle
