@@ -34,7 +34,7 @@
   </style>
 </head>
 <body>
-  <h1>Stitch ile Stres Patlat 💙💖</h1>
+  <h1>Stitch Bum’a Hoş Geldin Güzelim 💙💖</h1>
   <p>Baloncuklara dokun 🫧</p>
   <canvas id="canvas"></canvas>
 
@@ -124,18 +124,29 @@
 
     function popBubble(x, y) {
       unlockSound();
+      let poppedNow = false;
       bubbles.forEach(b => {
         if (!b.popped) {
           const dx = x - b.x;
           const dy = y - b.y;
           if (Math.sqrt(dx * dx + dy * dy) < radius) {
             b.popped = true;
+            poppedNow = true;
             popSound.currentTime = 0;
             popSound.play();
           }
         }
       });
-      draw();
+
+      // Hepsi patladıysa otomatik yenile
+      if (poppedNow && bubbles.every(b => b.popped)) {
+        setTimeout(() => {
+          createBubbles();
+          draw();
+        }, 500);
+      } else {
+        draw();
+      }
     }
 
     canvas.addEventListener("touchstart", e => {
