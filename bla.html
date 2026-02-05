@@ -2,238 +2,156 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>100 Günlük Aşk Takvimi ❤️</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stitch Stres Patlatma 💙💖</title>
   <style>
     body {
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #ff758c, #ff7eb3);
-      color: #fff;
-      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #ffd6e8, #cce7ff);
+      font-family: "Comic Sans MS", Arial, sans-serif;
+      overflow: hidden;
     }
-    header { padding: 40px 20px; text-align: center; }
-    header h1 { font-size: 2.5rem; margin-bottom: 10px; }
-    .countdown { background: rgba(255,255,255,0.15); margin: 20px auto; padding: 20px; max-width: 500px; border-radius: 16px; text-align: center; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 20px; padding: 30px; max-width: 1200px; margin: 0 auto; }
-    .card { background: rgba(255,255,255,0.18); border-radius: 20px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s; }
-    .card.locked { opacity: 0.5; cursor: not-allowed; }
-    .card.locked::after { content:'🔒'; font-size:3rem; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); }
-    .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:1000; }
-    .modal-content { background:#fff; color:#333; padding:30px; max-width:600px; width:90%; border-radius:20px; animation:letter 0.8s ease; }
-    @keyframes letter { from { transform:scale(0.6) rotateX(90deg); opacity:0;} to { transform:scale(1) rotateX(0); opacity:1;} }
-    .modal-content h2 { color:#ff4f7a; }
-    .close { margin-top:20px; padding:10px 25px; border:none; border-radius:25px; background:linear-gradient(135deg,#ff758c,#ff7eb3); color:#fff; cursor:pointer; }
-    footer { text-align:center; padding:40px; }
+    h1 {
+      margin: 8px 0 4px;
+      color: #ff5fa2;
+      text-shadow: 1px 1px 0 #7ec8ff;
+    }
+    p {
+      margin: 0 0 8px;
+      color: #4a90e2;
+      font-size: 14px;
+    }
+    canvas {
+      background: #fff0f7;
+      border-radius: 20px;
+      touch-action: manipulation;
+    }
   </style>
 </head>
 <body>
-  <header>
-    <h1>💖 100 Günlük Aşk Takvimi 💖</h1>
-    <p>prensesimmmm icinnnn yeniii yilll aktivitelerimizzz</p>
-  </header>
+  <h1>Stitch ile Stres Patlat 💙💖</h1>
+  <p>Baloncuklara dokun 🫧</p>
+  <canvas id="canvas"></canvas>
 
-  <div class="countdown">
-    <h2>⏳ Bir Sonraki Aktiviteye Kalan Süre</h2>
-    <span id="timer">Yükleniyor...</span>
-  </div>
-
-  <section class="grid" id="grid"></section>
-
-  <div class="modal" id="modal">
-    <div class="modal-content">
-      <h2 id="modalTitle"></h2>
-      <p id="modalText"></p>
-      <button class="close" onclick="closeModal()">Kapat ❤️</button>
-    </div>
-  </div>
-
-  <footer>
-    Bu siteyi <strong>sen</strong> muttluuu olll diyeee yabbdimm 💕<br />
-    Sonsuza kadar birlikte nice yillayaaa bitanemmmm
-  </footer>
+  <audio id="popSound" preload="auto">
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_9c2d8a8b8a.mp3" type="audio/mpeg" />
+  </audio>
 
   <script>
-    // BAŞLANGIÇ TARİHİ (İLK GÜN)
-    const startDate = new Date('2026-01-01T00:00:00');
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const popSound = document.getElementById("popSound");
+    let soundUnlocked = false;
 
-    // 100 AKTİVİTE
-    const activities = [
-"Gün 1 💌 Bugün görüntülü aramada uzun uzun konuşuyoruz ve şu soruya cevap veriyoruz: Hayatına girdiğimde sende ne değişti?",
-"Gün 2 💖 Birbirimize sesli mesaj atıyoruz: Şu an yanında olsaydım ne yapardık?",
-"Gün 3 🎧 Aynı anda aynı şarkıyı dinleyip bize ne hissettirdiğini anlatıyoruz.",
-"Gün 4 📸 Gün içinde seni mutlu eden bir anın fotoğrafını bana gönder.",
-"Gün 5 🎥 Aynı filmi aynı anda izleyip sonra üzerine konuşuyoruz.",
-"Gün 6 💬 Birbirimize daha önce hiç sormadığımız 3 derin soru soruyoruz.",
-"Gün 7 🌙 Gece uzun bir görüntülü konuşma yapıyoruz, acele yok.",
-"Gün 8 ✍️ Bana duygularını anlatan içinden gelen bir mesaj yaz.",
-"Gün 9 💞 Birlikte hayali bir gün planlıyoruz: sabah–akşam.",
-"Gün 10 🎶 Bana o anki ruh halini anlatan bir şarkı gönder.",
-
-"Gün 11 💬 Seni en çok hangi davranışımla güvende hissettirdiğimi anlat.",
-"Gün 12 🎥 Aynı dizinin bir bölümünü izleyip yorumluyoruz.",
-"Gün 13 🧠 Birbirimize gelecekle ilgili en büyük korkumuzu anlatıyoruz.",
-"Gün 14 💖 Tanıştığımız günü detaylarıyla hatırlıyoruz.",
-"Gün 15 🎧 Ortak bir playlist oluşturuyoruz.",
-"Gün 16 ✍️ Bana neden benimle devam etmek istediğini yaz.",
-"Gün 17 🌙 Uyumadan önce sesli konuşma yapıyoruz.",
-"Gün 18 💬 En çok özlediğin anımı anlat.",
-"Gün 19 🎥 Birlikte romantik bir video izliyoruz.",
-"Gün 20 💞 Gelecekte birlikte yapmak istediğimiz 5 şeyi sayıyoruz.",
-
-"Gün 21 💖 Birbirimize küçük ama dürüst bir iltifat yapıyoruz.",
-"Gün 22 ✍️ Bana seni en çok mutlu eden şeyleri anlat.",
-"Gün 23 🎧 Aynı şarkıyı dinleyip sessizce düşün.",
-"Gün 24 💬 Uzun bir gece sohbeti yapıyoruz.",
-"Gün 25 🎥 Birlikte bir YouTube videosu izliyoruz.",
-"Gün 26 💞 Beni neden sevdiğini tek bir cümleyle anlat.",
-"Gün 27 ✍️ Bana küçük bir aşk paragrafı yaz.",
-"Gün 28 🌙 Gece hayallerimizden bahsediyoruz.",
-"Gün 29 🎧 Bana seni bana hatırlatan bir şarkı gönder.",
-"Gün 30 💖 İlk 30 günü birlikte değerlendirme konuşması.",
-
-"Gün 31 💬 Birbirimize açıkça şunu soruyoruz: Sence biz neden iyiyiz?",
-"Gün 32 🎥 Aynı filmi tekrar izleyip farklı detayları konuşuyoruz.",
-"Gün 33 ✍️ Bana seni bana bağlayan şeyi anlat.",
-"Gün 34 🎧 Sessizce müzik dinleyip sonra konuş.",
-"Gün 35 💞 Birlikte gelecekteki evimizi hayal ediyoruz.",
-"Gün 36 💬 En çok hangi sözüm seni etkilemişti?",
-"Gün 37 🌙 Gece uzun bir sohbet daha.",
-"Gün 38 ✍️ Bana içinden gelen samimi bir mesaj yaz.",
-"Gün 39 🎥 Birlikte kısa bir belgesel izliyoruz.",
-"Gün 40 💖 Birbirimize 'iyi ki varsın' dediğimiz gün.",
-
-"Gün 41 💬 Seni en çok neyin yorduğunu anlat.",
-"Gün 42 ✍️ Bana seni motive eden şeyleri yaz.",
-"Gün 43 🎧 Bana huzur veren bir şarkı gönder.",
-"Gün 44 🌙 Gece sadece dinleme odaklı konuşma.",
-"Gün 45 💞 Birlikte gelecekteki bir tatili planlıyoruz.",
-"Gün 46 ✍️ Bana benimle ilgili en sevdiğin özelliğini yaz.",
-"Gün 47 🎥 Birlikte romantik sahneler izliyoruz.",
-"Gün 48 💬 En çok ne zaman bana ihtiyaç duydun?",
-"Gün 49 🎧 Ortak şarkımızı tekrar dinliyoruz.",
-"Gün 50 💖 50. gün: Bu ilişki sana ne kattı?",
-
-"Gün 51 ✍️ Bana gelecekte okuyacağım bir mesaj yaz.",
-"Gün 52 💬 Birlikte ciddi bir konu konuşuyoruz.",
-"Gün 53 🎧 Ruh halimizi paylaşma günü.",
-"Gün 54 🌙 Uzun bir gece konuşması.",
-"Gün 55 💞 Birlikte yaşlanmayı hayal ediyoruz.",
-"Gün 56 ✍️ Bana beni nasıl gördüğünü anlat.",
-"Gün 57 🎥 Birlikte bir romantik film daha.",
-"Gün 58 💬 Birbirimize dürüst bir teşekkür ediyoruz.",
-"Gün 59 🎧 Sessiz müzik + düşünme.",
-"Gün 60 💖 60. gün değerlendirme.",
-
-"Gün 61 ✍️ Bana seni en çok güldüren anımı yaz.",
-"Gün 62 💬 Birlikte hayat hedeflerimizi konuşuyoruz.",
-"Gün 63 🎧 Aynı şarkıyı farklı yerlerde dinle.",
-"Gün 64 🌙 Gece iç dökme.",
-"Gün 65 💞 Birlikte zor bir konuyu konuşuyoruz.",
-"Gün 66 ✍️ Bana senin için ne ifade ettiğimi yaz.",
-"Gün 67 🎥 Birlikte kısa bir video izliyoruz.",
-"Gün 68 💬 Seni en çok ne mutlu ediyor?",
-"Gün 69 🎧 Ortak müzik saati.",
-"Gün 70 💖 Seni neden seçtiğimi anlatıyorum.",
-
-"Gün 71 ✍️ Bana içinden geleni yaz.",
-"Gün 72 💬 Birlikte sessiz kalıp sonra konuş.",
-"Gün 73 🎧 Duygusal şarkı günü.",
-"Gün 74 🌙 Uzun gece sohbeti.",
-"Gün 75 💞 Birlikte hayat kurma hayali.",
-"Gün 76 ✍️ Bana sevildiğini hissettiğin anı anlat.",
-"Gün 77 🎥 Birlikte bir film daha.",
-"Gün 78 💬 Birbirimize açık sözlü oluyoruz.",
-"Gün 79 🎧 Müzikle anı.",
-"Gün 80 💖 Bu ilişkiyi neden korumak istiyoruz?",
-
-"Gün 81 ✍️ Bana kalbinden geleni yaz.",
-"Gün 82 💬 Birlikte gelecek korkularını konuş.",
-"Gün 83 🎧 Ortak sessizlik.",
-"Gün 84 🌙 Gece bağ kurma.",
-"Gün 85 💞 Birlikte yaşamak üzerine konuş.",
-"Gün 86 ✍️ Bana senin için anlamımı yaz.",
-"Gün 87 🎥 Birlikte romantik video.",
-"Gün 88 💬 Duygularımızı açıkça paylaş.",
-"Gün 89 🎧 Ortak şarkı.",
-"Gün 90 💖 Seni seçmeye devam ediyorum.",
-
-"Gün 91 ✍️ Bana geleceğe not yaz.",
-"Gün 92 💬 Birlikte zor zamanları konuş.",
-"Gün 93 🎧 Huzur saati.",
-"Gün 94 🌙 Gece kalpten konuşma.",
-"Gün 95 💞 Birlikte sonsuzluğu hayal et.",
-"Gün 96 ✍️ Bana aşkını anlat.",
-"Gün 97 🎥 Birlikte son film.",
-"Gün 98 💬 Bu ilişkiyi tarif et.",
-"Gün 99 🎧 Ortak sessiz an.",
-"Gün 100 ❤️ Seni her gün yeniden seçiyorum."
-];
-
-    const grid = document.getElementById('grid');
-    const modal = document.getElementById('modal');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalText = document.getElementById('modalText');
-    const timerEl = document.getElementById('timer');
-
-    function getUnlockedDays() {
-      const now = new Date();
-      const diff = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
-      return Math.max(0, Math.min(diff + 1, activities.length));
+    function resize() {
+      canvas.width = Math.min(window.innerWidth - 20, 420);
+      canvas.height = Math.min(window.innerHeight - 140, 620);
+      createBubbles();
+      draw();
     }
 
-    function renderCards() {
-      grid.innerHTML = '';
-      const unlocked = getUnlockedDays();
+    window.addEventListener("resize", resize);
 
-      activities.forEach((_, i) => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        if (i >= unlocked) card.classList.add('locked');
+    const bubbles = [];
+    const radius = 18;
+    const gap = 14;
 
-        card.innerHTML = `<h3>Gün ${i + 1}</h3>`;
-
-        if (i < unlocked) {
-          card.onclick = () => openModal(i);
+    function createBubbles() {
+      bubbles.length = 0;
+      for (let y = radius + gap; y < canvas.height; y += radius * 2 + gap) {
+        for (let x = radius + gap; x < canvas.width; x += radius * 2 + gap) {
+          bubbles.push({ x, y, popped: false });
         }
-        grid.appendChild(card);
+      }
+    }
+
+    function drawBubble(x, y, r) {
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+      ctx.fill();
+      ctx.strokeStyle = "#ff9ecf";
+      ctx.stroke();
+    }
+
+    // Tek büyük Stitch görseli (merkezde)
+    const stitchImg = new Image();
+    let stitchReady = false;
+
+    stitchImg.onload = () => {
+      stitchReady = true;
+      draw();
+    };
+
+    stitchImg.onerror = () => {
+      console.warn("Stitch PNG yüklenemedi.");
+      stitchReady = false;
+    };
+
+    stitchImg.src = "stitch.png"; // büyük Stitch PNG (aynı klasörde)
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (stitchReady) {
+        const scale = Math.min(canvas.width / stitchImg.width, canvas.height / stitchImg.height) * 0.8;
+        const w = stitchImg.width * scale;
+        const h = stitchImg.height * scale;
+        const x = (canvas.width - w) / 2;
+        const y = (canvas.height - h) / 2;
+        ctx.drawImage(stitchImg, x, y, w, h);
+      }
+
+      bubbles.forEach(b => {
+        if (!b.popped) {
+          drawBubble(b.x, b.y, radius);
+        }
       });
     }
 
-    function openModal(index) {
-      modalTitle.textContent = `Gün ${index + 1} ❤️`;
-      modalText.textContent = activities[index];
-      modal.style.display = 'flex';
-    }
-
-    function closeModal() {
-      modal.style.display = 'none';
-    }
-
-    function updateCountdown() {
-      const now = new Date();
-      const unlocked = getUnlockedDays();
-      const nextDay = new Date(startDate);
-      nextDay.setDate(startDate.getDate() + unlocked);
-
-      const diff = nextDay - now;
-      if (diff <= 0) {
-        timerEl.textContent = 'Yeni aktivite açıldı! 🎉';
-        renderCards();
-        return;
+    function unlockSound() {
+      if (!soundUnlocked) {
+        popSound.play().then(() => {
+          popSound.pause();
+          popSound.currentTime = 0;
+          soundUnlocked = true;
+        }).catch(() => {});
       }
-
-      const h = Math.floor(diff / (1000 * 60 * 60));
-      const m = Math.floor((diff / (1000 * 60)) % 60);
-      const s = Math.floor((diff / 1000) % 60);
-
-      timerEl.textContent = `${h} saat ${m} dakika ${s} saniye`;
     }
 
-    renderCards();
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
+    function popBubble(x, y) {
+      unlockSound();
+      bubbles.forEach(b => {
+        if (!b.popped) {
+          const dx = x - b.x;
+          const dy = y - b.y;
+          if (Math.sqrt(dx * dx + dy * dy) < radius) {
+            b.popped = true;
+            popSound.currentTime = 0;
+            popSound.play();
+          }
+        }
+      });
+      draw();
+    }
+
+    canvas.addEventListener("touchstart", e => {
+      const rect = canvas.getBoundingClientRect();
+      const t = e.touches[0];
+      popBubble(t.clientX - rect.left, t.clientY - rect.top);
+    });
+
+    canvas.addEventListener("click", e => {
+      const rect = canvas.getBoundingClientRect();
+      popBubble(e.clientX - rect.left, e.clientY - rect.top);
+    });
+
+    resize();
   </script>
 </body>
 </html>
-
