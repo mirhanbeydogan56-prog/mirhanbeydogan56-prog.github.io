@@ -6,74 +6,107 @@
 <title>En Güzel Hediyem</title>
 
 <style>
-    body {
-        margin: 0;
-        background: linear-gradient(135deg, #ffb6d9, #ffc0cb);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        font-family: 'Segoe UI', sans-serif;
-        overflow: hidden;
-    }
+body {
+    margin: 0;
+    background: linear-gradient(135deg, #ffb6d9, #ffc0cb);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
+    overflow: hidden;
+}
 
-    .mirror-container {
-        position: relative;
-        width: 320px;
-        height: 320px;
-        border-radius: 50%;
-        overflow: hidden;
-        border: 10px solid white;
-        box-shadow: 0 0 30px rgba(255,255,255,0.8);
-    }
+/* ALTIN ÇERÇEVE */
+.mirror-frame {
+    position: relative;
+    width: 380px;
+    height: 480px;
+    border-radius: 50% / 60%;
+    padding: 25px;
+    background: linear-gradient(145deg, #d4af37, #ffd700, #b8860b);
+    box-shadow: 
+        0 0 40px rgba(255,215,0,0.8),
+        inset 0 0 25px rgba(255,255,255,0.7),
+        inset 0 0 50px rgba(184,134,11,0.9);
+    animation: shine 3s infinite linear;
+}
 
-    video {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transform: scaleX(-1);
-    }
+/* OYMALI SVG DESEN */
+.ornament {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    fill: gold;
+    filter: drop-shadow(0 0 8px rgba(255,215,0,0.7));
+}
 
-    .flowers {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        font-size: 40px;
-    }
+.top { top: -50px; left: 50%; transform: translateX(-50%); }
+.bottom { bottom: -50px; left: 50%; transform: translateX(-50%) rotate(180deg); }
+.left { left: -50px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
+.right { right: -50px; top: 50%; transform: translateY(-50%) rotate(90deg); }
 
-    .flower {
-        position: absolute;
-    }
+.mirror {
+    width: 100%;
+    height: 100%;
+    border-radius: 50% / 60%;
+    overflow: hidden;
+    background: black;
+    border: 8px solid rgba(255,255,255,0.5);
+}
 
-    .flower:nth-child(1) { top: -10px; left: 50%; transform: translateX(-50%); }
-    .flower:nth-child(2) { bottom: -10px; left: 50%; transform: translateX(-50%); }
-    .flower:nth-child(3) { left: -10px; top: 50%; transform: translateY(-50%); }
-    .flower:nth-child(4) { right: -10px; top: 50%; transform: translateY(-50%); }
+video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+}
 
-    .text {
-        margin-top: 30px;
-        font-size: 22px;
-        color: white;
-        text-align: center;
-        max-width: 80%;
-        font-weight: bold;
-        text-shadow: 0 0 10px rgba(255,255,255,0.8);
-    }
+.text {
+    margin-top: 30px;
+    font-size: 22px;
+    color: white;
+    text-align: center;
+    max-width: 80%;
+    font-weight: bold;
+    text-shadow: 0 0 15px rgba(255,255,255,0.8);
+}
+
+@keyframes shine {
+    0% { filter: brightness(1); }
+    50% { filter: brightness(1.2); }
+    100% { filter: brightness(1); }
+}
 </style>
 </head>
 
 <body>
 
-<div class="mirror-container">
-    <video id="video" autoplay playsinline></video>
+<div class="mirror-frame">
 
-    <div class="flowers">
-        <div class="flower">🌸</div>
-        <div class="flower">🌷</div>
-        <div class="flower">🌺</div>
-        <div class="flower">🌼</div>
+    <!-- ÜST OYMA -->
+    <svg class="ornament top" viewBox="0 0 100 100">
+        <path d="M50 10 Q60 30 80 30 Q60 40 50 60 Q40 40 20 30 Q40 30 50 10Z"/>
+    </svg>
+
+    <!-- ALT OYMA -->
+    <svg class="ornament bottom" viewBox="0 0 100 100">
+        <path d="M50 10 Q60 30 80 30 Q60 40 50 60 Q40 40 20 30 Q40 30 50 10Z"/>
+    </svg>
+
+    <!-- SOL OYMA -->
+    <svg class="ornament left" viewBox="0 0 100 100">
+        <path d="M50 10 Q60 30 80 30 Q60 40 50 60 Q40 40 20 30 Q40 30 50 10Z"/>
+    </svg>
+
+    <!-- SAĞ OYMA -->
+    <svg class="ornament right" viewBox="0 0 100 100">
+        <path d="M50 10 Q60 30 80 30 Q60 40 50 60 Q40 40 20 30 Q40 30 50 10Z"/>
+    </svg>
+
+    <div class="mirror">
+        <video id="video" autoplay playsinline></video>
     </div>
 </div>
 
@@ -81,16 +114,26 @@
     Döndüm dolaştım sana senden güzel hediye bulamadım.
 </div>
 
-<script>
-    const video = document.getElementById('video');
+<!-- MÜZİK -->
+<audio id="bgMusic" src="E12.mp3" autoplay loop></audio>
 
-    navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-            video.srcObject = stream;
-        })
-        .catch(error => {
-            alert("Kameraya erişim izni gerekiyor 💕");
-        });
+<script>
+const video = document.getElementById('video');
+const music = document.getElementById('bgMusic');
+
+// Kamera
+navigator.mediaDevices.getUserMedia({ video: true })
+.then(stream => {
+    video.srcObject = stream;
+})
+.catch(error => {
+    alert("Kameraya erişim izni gerekiyor 💕");
+});
+
+// Tarayıcı otomatik müziği engellerse tıklayınca başlat
+document.body.addEventListener('click', () => {
+    music.play();
+});
 </script>
 
 </body>
