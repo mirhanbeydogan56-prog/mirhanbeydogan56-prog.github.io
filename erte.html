@@ -3,42 +3,90 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>En Güzel Hediyem</title>
+<title>Gece Masalı</title>
 
 <style>
 body {
     margin: 0;
-    background: linear-gradient(135deg, #ffb6d9, #ffc0cb);
+    background: radial-gradient(circle at top, #2b1055, #0f0524 70%);
+    height: 100vh;
+    overflow: hidden;
+    font-family: 'Segoe UI', sans-serif;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh;
-    font-family: 'Segoe UI', sans-serif;
+    color: white;
 }
 
-/* DAHA KÜÇÜK YUVARLAK ALTIN ÇERÇEVE */
+/* YILDIZLAR */
+.stars {
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    background: url('https://www.transparenttextures.com/patterns/stardust.png');
+    animation: moveStars 60s linear infinite;
+    opacity: 0.4;
+}
+
+@keyframes moveStars {
+    from { transform: translate(0,0); }
+    to { transform: translate(-500px,-500px); }
+}
+
+/* AÇILIŞ EKRANI */
+.overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(43,16,85,0.95), rgba(15,5,36,1));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    z-index: 5;
+    cursor: pointer;
+    transition: opacity 1s ease;
+}
+
+.overlay h1 {
+    font-size: 22px;
+    letter-spacing: 2px;
+    text-align: center;
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from { text-shadow: 0 0 10px #fff; }
+    to { text-shadow: 0 0 25px #caa9ff; }
+}
+
+/* AYNA PORTAL */
 .mirror-frame {
     position: relative;
-    width: 260px;
-    height: 260px;
+    width: 240px;
+    height: 240px;
     border-radius: 50%;
-    padding: 12px;
+    padding: 10px;
     background: linear-gradient(145deg, #d4af37, #ffd700, #b8860b);
-    box-shadow: 
-        0 0 25px rgba(255,215,0,0.8),
-        inset 0 0 15px rgba(255,255,255,0.7);
-    animation: shine 3s infinite linear;
+    box-shadow:
+        0 0 40px rgba(255,215,0,0.6),
+        inset 0 0 20px rgba(255,255,255,0.6);
+    animation: pulse 4s ease-in-out infinite;
+    z-index: 2;
 }
 
-/* YUVARLAK AYNA */
+@keyframes pulse {
+    0% { box-shadow: 0 0 30px rgba(255,215,0,0.5); }
+    50% { box-shadow: 0 0 60px rgba(255,215,0,0.9); }
+    100% { box-shadow: 0 0 30px rgba(255,215,0,0.5); }
+}
+
 .mirror {
     width: 100%;
     height: 100%;
     border-radius: 50%;
     overflow: hidden;
-    background: black;
-    border: 5px solid rgba(255,255,255,0.5);
+    position: relative;
 }
 
 video {
@@ -48,83 +96,84 @@ video {
     transform: scaleX(-1);
 }
 
-/* OYMALI DESENLER */
-.ornament {
+/* AY IŞIĞI GEÇİŞİ */
+.mirror::after {
+    content: "";
     position: absolute;
-    width: 60px;
-    height: 60px;
-    fill: gold;
-    filter: drop-shadow(0 0 6px rgba(255,215,0,0.7));
-}
-
-.top { top: -30px; left: 50%; transform: translateX(-50%); }
-.bottom { bottom: -30px; left: 50%; transform: translateX(-50%) rotate(180deg); }
-.left { left: -30px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
-.right { right: -30px; top: 50%; transform: translateY(-50%) rotate(90deg); }
-
-.text {
-    margin-top: 25px;
-    font-size: 18px;
-    color: white;
-    text-align: center;
-    max-width: 85%;
-    font-weight: bold;
-    text-shadow: 0 0 10px rgba(255,255,255,0.8);
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(60deg, transparent 40%, rgba(255,255,255,0.4), transparent 60%);
+    animation: shine 5s infinite;
 }
 
 @keyframes shine {
-    0% { filter: brightness(1); }
-    50% { filter: brightness(1.15); }
-    100% { filter: brightness(1); }
+    0% { transform: translateX(-100%) rotate(25deg); }
+    100% { transform: translateX(100%) rotate(25deg); }
+}
+
+.text {
+    position: absolute;
+    bottom: 40px;
+    text-align: center;
+    font-size: 18px;
+    max-width: 80%;
+    opacity: 0;
+    transition: opacity 2s ease;
 }
 </style>
 </head>
 
 <body>
 
-<div class="mirror-frame">
+<div class="stars"></div>
 
-    <svg class="ornament top" viewBox="0 0 100 100">
-        <path d="M50 10 Q65 30 90 30 Q65 45 50 70 Q35 45 10 30 Q35 30 50 10Z"/>
-    </svg>
+<div class="overlay" id="overlay">
+    <h1>🌙 Masal başlasın mı?</h1>
+</div>
 
-    <svg class="ornament bottom" viewBox="0 0 100 100">
-        <path d="M50 10 Q65 30 90 30 Q65 45 50 70 Q35 45 10 30 Q35 30 50 10Z"/>
-    </svg>
-
-    <svg class="ornament left" viewBox="0 0 100 100">
-        <path d="M50 10 Q65 30 90 30 Q65 45 50 70 Q35 45 10 30 Q35 30 50 10Z"/>
-    </svg>
-
-    <svg class="ornament right" viewBox="0 0 100 100">
-        <path d="M50 10 Q65 30 90 30 Q65 45 50 70 Q35 45 10 30 Q35 30 50 10Z"/>
-    </svg>
-
+<div class="mirror-frame" style="display:none;" id="mirrorContainer">
     <div class="mirror">
         <video id="video" autoplay playsinline></video>
     </div>
 </div>
 
-<div class="text">
+<div class="text" id="romanticText">
     Döndüm dolaştım sana senden güzel hediye bulamadım.
 </div>
 
-<audio id="bgMusic" src="E12.mp3" autoplay loop></audio>
+<audio id="bgMusic" src="E12.mp3" loop></audio>
 
 <script>
-const video = document.getElementById('video');
-const music = document.getElementById('bgMusic');
+const overlay = document.getElementById("overlay");
+const mirrorContainer = document.getElementById("mirrorContainer");
+const text = document.getElementById("romanticText");
+const music = document.getElementById("bgMusic");
+const video = document.getElementById("video");
 
-navigator.mediaDevices.getUserMedia({ video: true })
-.then(stream => {
-    video.srcObject = stream;
-})
-.catch(error => {
-    alert("Kameraya erişim izni gerekiyor 💕");
-});
+overlay.addEventListener("click", () => {
+    overlay.style.opacity = "0";
+    setTimeout(() => overlay.style.display = "none", 1000);
 
-document.body.addEventListener('click', () => {
+    mirrorContainer.style.display = "block";
+    text.style.opacity = "1";
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+        video.srcObject = stream;
+    });
+
+    // Fade-in müzik
+    music.volume = 0;
     music.play();
+    let fade = setInterval(() => {
+        if (music.volume < 0.9) {
+            music.volume += 0.05;
+        } else {
+            clearInterval(fade);
+        }
+    }, 300);
 });
 </script>
 
