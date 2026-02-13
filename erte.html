@@ -18,7 +18,7 @@ body {
     color: white;
 }
 
-/* YILDIZLAR */
+/* YILDIZ ARKA PLAN */
 .stars {
     position: absolute;
     width: 200%;
@@ -73,6 +73,7 @@ body {
         inset 0 0 20px rgba(255,255,255,0.6);
     animation: pulse 4s ease-in-out infinite;
     z-index: 2;
+    display: none;
 }
 
 @keyframes pulse {
@@ -113,14 +114,48 @@ video {
     100% { transform: translateX(100%) rotate(25deg); }
 }
 
+/* ✨ EPİK YAZI EFEKTİ ✨ */
 .text {
     position: absolute;
-    bottom: 40px;
+    bottom: 50px;
     text-align: center;
-    font-size: 18px;
-    max-width: 80%;
+    font-size: 20px;
+    max-width: 85%;
+    font-weight: bold;
+    background: linear-gradient(90deg, #fff6cc, #ffd700, #fff6cc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 15px rgba(255,215,0,0.8);
     opacity: 0;
-    transition: opacity 2s ease;
+    animation: textAppear 3s ease forwards 1.5s;
+}
+
+@keyframes textAppear {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Parıltı geçiş */
+.text::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.6), transparent);
+    animation: shineText 4s infinite;
+}
+
+@keyframes shineText {
+    0% { left: -100%; }
+    100% { left: 100%; }
 }
 </style>
 </head>
@@ -133,14 +168,15 @@ video {
     <h1>🌙 Masal başlasın mı?</h1>
 </div>
 
-<div class="mirror-frame" style="display:none;" id="mirrorContainer">
+<div class="mirror-frame" id="mirrorContainer">
     <div class="mirror">
         <video id="video" autoplay playsinline></video>
     </div>
 </div>
 
 <div class="text" id="romanticText">
-    Döndüm dolaştım sana senden güzel hediye bulamadım.
+    Döndüm dolaştım…<br>
+    Bu dünyada sana senden güzel hediye bulamadım.
 </div>
 
 <audio id="bgMusic" src="E12.mp3" loop></audio>
@@ -164,7 +200,7 @@ overlay.addEventListener("click", () => {
         video.srcObject = stream;
     });
 
-    // Fade-in müzik
+    /* Fade-in müzik */
     music.volume = 0;
     music.play();
     let fade = setInterval(() => {
