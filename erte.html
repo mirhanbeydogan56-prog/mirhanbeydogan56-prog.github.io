@@ -179,7 +179,7 @@ video {
     Bu dünyada sana senden güzel hediye bulamadım.
 </div>
 
-<audio id="bgMusic" src="E12.mp3" loop preload="auto"></audio>
+<audio id="bgMusic" src="E12.mp3" loop preload="auto" playsinline></audio>
 
 <script>
 const overlay = document.getElementById("overlay");
@@ -195,22 +195,30 @@ overlay.addEventListener("click", () => {
     mirrorContainer.style.display = "block";
     text.style.opacity = "1";
 
-    // Kamera
+    // Kamera başlat
     navigator.mediaDevices.getUserMedia({ video: true })
     .then(stream => { video.srcObject = stream; })
     .catch(err => console.log(err));
 
-    // iOS uyumlu müzik başlatma (dokunma sonrası)
-    music.volume = 0;
-    music.play().then(() => {
-        // Fade-in
-        let fade = setInterval(() => {
-            if (music.volume < 0.9) { music.volume += 0.05; }
-            else { clearInterval(fade); }
-        }, 300);
-    }).catch(err => console.log("iOS dokunma gerekli", err));
+    // iOS uyumlu ses başlatma
+    const playAudio = () => {
+        music.play().then(() => {
+            console.log("Müzik başladı");
+        }).catch(err => {
+            console.log("iOS: dokunma ile başlatmalı", err);
+        });
+    };
+
+    // Eğer Safari iOS ise
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (isIOS) {
+        playAudio(); // overlay dokununca tetiklenecek
+    } else {
+        music.play(); // diğer tarayıcılar direkt
+    }
 });
 </script>
+
 
 </body>
 </html>
